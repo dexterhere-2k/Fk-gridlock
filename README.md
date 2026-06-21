@@ -618,3 +618,111 @@ docker compose exec api python -m src.learning_loop   # manual retrain
 - `./scripts/verify_deploy.sh` — runs ~12 endpoint probes + the full
   `tests/test_api_contract.py` suite against the live stack
 
+## Deployment (Heroku — single Eco dyno, GitHub Student Pack)
+
+Uses the **container stack** so we ship our own Dockerfile (which already
+includes the API + the SPA + nginx, all wired together by `entrypoint.sh`).
+One Eco dyno ($5/mo) is enough; with the [GitHub Student Developer Pack's
+$13 in Heroku credits](https://www.heroku.com/github-students), this
+costs **$0 for ~2.5 months** of always-on hosting.
+
+### One-time setup
+
+1. **Claim the GitHub Student → Heroku offer**:
+   https://www.heroku.com/github-students — sign in with GitHub, click
+   the offer. Your account is credited with $13 in Heroku compute.
+2. **Install the Heroku CLI**:
+   - macOS: `brew tap heroku/brew && brew install heroku`
+   - Linux: `curl https://cli-assets.heroku.com/install.sh | sh`
+3. **Login**: `heroku login`
+
+### Push the repo to GitHub (one-time)
+
+```bash
+cd gridlock_submission
+git remote add origin git@github.com:dexterhere-2k/Fp-gridlock.git
+git push -u origin main
+```
+
+### Deploy
+
+```bash
+# Create the Heroku app (container stack so we can use our Dockerfile)
+heroku create gridlock-demo --stack=container
+
+# Deploy from main
+git push heroku main
+
+# Open in the browser
+heroku open
+```
+
+`https://gridlock-demo.herokuapp.com` is your public URL. Every push to
+`main` triggers a rebuild + redeploy automatically.
+
+### What runs inside the dyno
+
+```
+   https://gridlock-demo.herokuapp.com
+              │
+              ▼
+   ┌──────────────────────────────┐
+   │  nginx (PID 1, port $PORT)   │  ← exposes the SPA + proxies /api/*
+   └──────────────┬───────────────┘
+                  │ 127.0.0.1:8000
+   ┌──────────────▼───────────────┐
+   │  uvicorn api.main:app         │  ← ML core + 26 endpoints
+   └───────────────────────────────┘
+```
+
+`tini` (PID 0) supervises the entrypoint script, which starts uvicorn in
+the background, waits for `/api/health` to be ready, then execs nginx as
+PID 1. This is the "single foreground process" pattern Heroku requires
+for `web` dynos.
+
+### Verify the deploy
+
+```bash
+heroku logs --tail              # live tail
+heroku ps                       # dyno state
+heroku run bash                 # open a shell in the dyno
+heroku config                   # env vars
+```
+
+In a browser: `https://gridlock-demo.herokuapp.com` should show the
+GridLock command center. Try `/predict`, `/allocate`, `/debrief`.
+
+### Environment variables (all optional)
+
+```bash
+heroku config:set GRIDLOCK_LOG_LEVEL=info
+heroku config:set MAPPLS_REST_KEY=...     # enables live distance matrix
+heroku config:set MAPPLS_CLIENT_ID=...    # OAuth2 mode
+heroku config:set MAPPLS_CLIENT_SECRET=...
+```
+
+Without a Mappls key the API uses the **baked-in `artifacts/map_cache/`**
+fallback (pre-computed corridor distances + static GeoJSON) — fully
+functional for the demo.
+
+### Caveats
+
+- **Ephemeral filesystem**: the SQLite ledger (`/app/artifacts/ledger.sqlite3`)
+  survives `git push` deploys but is wiped on Heroku's 24h dyno cycle. If
+  you need persistent outcomes, add Heroku Postgres:
+  `heroku addons:create heroku-postgresql:mini` ($5/mo, paid out of your
+  credits) — then adapt the ledger code to use Postgres.
+- **Cold start**: ~5-10s on first request after a deploy while artifacts
+  load. Subsequent requests are fast.
+- **WebSocket**: works on the `*.herokuapp.com` domain out of the box
+  (no extra config).
+
+### Cost with GitHub Student Pack
+
+| Item | Cost |
+|---|---|
+| Eco dyno (always-on) | $5/mo → covered |
+| SSL / HTTPS | $0 (Let's Encrypt, auto) |
+| Custom domain (optional) | $0 (use `.herokuapp.com`) |
+| **Total hackathon spend** | **$0 for ~2.5 months** |
+

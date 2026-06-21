@@ -1,0 +1,55 @@
+{
+  "name": "GridLock",
+  "description": "Bengaluru congestion intelligence: clearance time forecast, ILP-based multi-event deployment, learning loop, Mappls geocoded map.",
+  "keywords": ["solana", "congestion", "traffic", "ml", "fastapi", "react"],
+  "website": "https://github.com/dexterhere-2k/Fp-gridlock",
+  "repository": "https://github.com/dexterhere-2k/Fp-gridlock.git",
+  "success_url": "/",
+  "stack": "container",
+  "env": {
+    "GRIDLOCK_LOG_LEVEL": {
+      "description": "uvicorn log level",
+      "value": "info",
+      "required": false
+    },
+    "MAPPLS_REST_KEY": {
+      "description": "Optional Mappls REST key — enables live distance matrix. Without it, the API uses the baked-in map_cache/ fallback.",
+      "required": false
+    },
+    "MAPPLS_CLIENT_ID": {
+      "description": "Optional Mappls OAuth2 client id (alternative to MAPPLS_REST_KEY).",
+      "required": false
+    },
+    "MAPPLS_CLIENT_SECRET": {
+      "description": "Optional Mappls OAuth2 client secret.",
+      "required": false
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "eco",
+      "healthcheck": {
+        "type": "GET",
+        "path": "/healthz",
+        "interval": 15,
+        "timeout": 4,
+        "retries": 3
+      }
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku-buildpack-container"
+    }
+  ],
+  "environments": {
+    "review": {
+      "formation": {
+        "web": {
+          "size": "eco"
+        }
+      }
+    }
+  }
+}
