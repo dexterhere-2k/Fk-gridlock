@@ -640,7 +640,7 @@ costs **$0 for ~2.5 months** of always-on hosting.
 
 ```bash
 cd gridlock_submission
-git remote add origin git@github.com:dexterhere-2k/Fp-gridlock.git
+git remote add origin https://github.com/dexterhere-2k/Fk-gridlock.git
 git push -u origin main
 ```
 

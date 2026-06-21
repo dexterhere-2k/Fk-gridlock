@@ -2,8 +2,8 @@
   "name": "GridLock",
   "description": "Bengaluru congestion intelligence: clearance time forecast, ILP-based multi-event deployment, learning loop, Mappls geocoded map.",
   "keywords": ["solana", "congestion", "traffic", "ml", "fastapi", "react"],
-  "website": "https://github.com/dexterhere-2k/Fp-gridlock",
-  "repository": "https://github.com/dexterhere-2k/Fp-gridlock.git",
+  "website": "https://github.com/dexterhere-2k/Fk-gridlock",
+  "repository": "https://github.com/dexterhere-2k/Fk-gridlock.git",
   "success_url": "/",
   "stack": "container",
   "env": {
