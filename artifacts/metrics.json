@@ -1,0 +1,260 @@
+{
+  "spec": "01_data_ml_core",
+  "T1_clearance": {
+    "p50_mae_min": 47.1324,
+    "p50_rmse_min": 77.5147,
+    "p10_mae_min": 60.7919,
+    "p90_mae_min": 83.6142,
+    "p10_p90_coverage": 0.7079,
+    "naive_mean_mae_min": 52.2361,
+    "naive_median_mae_min": 48.1967,
+    "lift_over_naive_median_pct": 2.2082,
+    "calibration": {
+      "p10_offset_min": 0.0,
+      "p90_offset_min": 0.0,
+      "val_coverage_after": 0.783641160949868,
+      "target_coverage": 0.8
+    },
+    "n_uncensored_test": 380,
+    "median_target_min": 48.5398,
+    "operational_cap_min": 360
+  },
+  "T2_survival": {
+    "model_name": "cox",
+    "c_index": 0.6248,
+    "n_train": 8171,
+    "n_uncensored": 2527,
+    "n_censored": 5644,
+    "n_features": 44
+  },
+  "T3_closure": {
+    "roc_auc": 0.8131,
+    "pr_auc": 0.3756,
+    "brier": 0.0901,
+    "f1_at_best_threshold": 0.4029,
+    "best_threshold": 0.4264,
+    "test_positive_rate": 0.0856,
+    "n_test": 1226,
+    "n_features": 44,
+    "operating_points": [
+      {
+        "threshold": 0.1,
+        "n_pos_pred": 867,
+        "precision": 0.113,
+        "recall": 0.9333
+      },
+      {
+        "threshold": 0.15,
+        "n_pos_pred": 642,
+        "precision": 0.1495,
+        "recall": 0.9143
+      },
+      {
+        "threshold": 0.2,
+        "n_pos_pred": 495,
+        "precision": 0.1737,
+        "recall": 0.819
+      },
+      {
+        "threshold": 0.3,
+        "n_pos_pred": 301,
+        "precision": 0.2226,
+        "recall": 0.6381
+      },
+      {
+        "threshold": 0.4,
+        "n_pos_pred": 191,
+        "precision": 0.3141,
+        "recall": 0.5714
+      },
+      {
+        "threshold": 0.5,
+        "n_pos_pred": 121,
+        "precision": 0.3967,
+        "recall": 0.4571
+      }
+    ]
+  },
+  "T4_risk_and_cascade": {
+    "n_corridors": 22,
+    "top_corridors": [
+      {
+        "corridor": "Non-corridor",
+        "events": 3142,
+        "med_clear": 48.9558131,
+        "p90_clear": 177.74265468166655,
+        "closure_rate": 0.1203055378739656,
+        "med_censored_age": 0.7097390197326544,
+        "risk_score": 0.7993669907154363
+      },
+      {
+        "corridor": "Airport New South Road",
+        "events": 67,
+        "med_clear": 64.49834003333333,
+        "p90_clear": 415.7496759566667,
+        "closure_rate": 0.1044776119402985,
+        "med_censored_age": 0.746268656716418,
+        "risk_score": 0.5597207426448354
+      },
+      {
+        "corridor": "Mysore Road",
+        "events": 743,
+        "med_clear": 41.20958018333333,
+        "p90_clear": 122.48754282333334,
+        "closure_rate": 0.1103633916554508,
+        "med_censored_age": 0.5989232839838493,
+        "risk_score": 0.4162226217883772
+      },
+      {
+        "corridor": "Varthur Road",
+        "events": 77,
+        "med_clear": 46.857148433333336,
+        "p90_clear": 125.90804141666668,
+        "closure_rate": 0.1168831168831168,
+        "med_censored_age": 0.6753246753246753,
+        "risk_score": 0.3523712830441399
+      },
+      {
+        "corridor": "ORR North 1",
+        "events": 275,
+        "med_clear": 51.12241125,
+        "p90_clear": 184.4276037499999,
+        "closure_rate": 0.08,
+        "med_censored_age": 0.7345454545454545,
+        "risk_score": 0.3209932975112867
+      }
+    ],
+    "cascade_n_edges": 117,
+    "cascade_n_edges_raw": 145,
+    "cascade_n_corridors": 18,
+    "cascade_n_hours": 2350,
+    "cascade_top_edges": [
+      {
+        "source": "Bannerghata Road",
+        "target": "IRR(Thanisandra road)",
+        "lag_h": 2,
+        "r": 0.31689484495812337,
+        "p": 6.331721403048169e-56,
+        "n_pairs": 2348
+      },
+      {
+        "source": "Mysore Road",
+        "target": "ORR East 1",
+        "lag_h": 1,
+        "r": 0.2809996325591812,
+        "p": 7.017330165868738e-44,
+        "n_pairs": 2349
+      },
+      {
+        "source": "IRR(Thanisandra road)",
+        "target": "Hosur Road",
+        "lag_h": 3,
+        "r": 0.25773742930559423,
+        "p": 6.325293463426259e-37,
+        "n_pairs": 2347
+      },
+      {
+        "source": "Non-corridor",
+        "target": "IRR(Thanisandra road)",
+        "lag_h": 1,
+        "r": 0.19244311723411942,
+        "p": 4.953596227400595e-21,
+        "n_pairs": 2349
+      },
+      {
+        "source": "Bannerghata Road",
+        "target": "Hosur Road",
+        "lag_h": 3,
+        "r": 0.1889388632962772,
+        "p": 2.6638897727521986e-20,
+        "n_pairs": 2347
+      }
+    ],
+    "cascade_trigger_rank": [
+      {
+        "corridor": "Non-corridor",
+        "downstream_count": 12,
+        "max_r": 0.19244311723411942
+      },
+      {
+        "corridor": "ORR North 2",
+        "downstream_count": 12,
+        "max_r": 0.1076217448874833
+      },
+      {
+        "corridor": "Mysore Road",
+        "downstream_count": 10,
+        "max_r": 0.2809996325591812
+      },
+      {
+        "corridor": "Tumkur Road",
+        "downstream_count": 9,
+        "max_r": 0.13679571817604602
+      },
+      {
+        "corridor": "ORR East 2",
+        "downstream_count": 8,
+        "max_r": 0.16872107597944563
+      }
+    ],
+    "cascade_strongest_chains": [
+      "Bannerghata Road --2h r=0.32--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road --3h r=0.12--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road --3h r=0.12--> IRR(Thanisandra road)",
+      "Bellary Road 1 --1h r=0.12--> Non-corridor --1h r=0.19--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road --3h r=0.12--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road",
+      "Bellary Road 2 --1h r=0.07--> Magadi Road --1h r=0.09--> Mysore Road --1h r=0.28--> ORR East 1 --1h r=0.11--> Non-corridor --1h r=0.19--> IRR(Thanisandra road)"
+    ]
+  },
+  "nlp_coverage": {
+    "n_rows_total": 8171,
+    "nlp_coverage_pct": 35.6,
+    "kannada_rows": 870,
+    "kannada_coverage_pct": 10.65,
+    "subtype_distribution": {
+      "other": 3789,
+      "vehicle_breakdown": 2091,
+      "congestion_only": 1256,
+      "construction_or_utility": 355,
+      "waterlogging_or_pothole": 308,
+      "collision": 148,
+      "tree_or_debris": 126,
+      "crowd_or_event": 66,
+      "vip_or_procession": 32
+    },
+    "feature_positive_counts": {
+      "nlp_lanes_blocked": 107,
+      "nlp_needs_crane_tow": 1587,
+      "nlp_weather_water": 350,
+      "nlp_agency_mention": 435,
+      "nlp_kannada_cues": 870
+    },
+    "nlp_features_above_4": 8
+  },
+  "definition_of_done": {
+    "T1_p50_mae_under_70": true,
+    "T3_closure_roc_auc_at_least_075": true,
+    "T2_survival_cindex_above_05": true,
+    "T4b_cascade_at_least_100": true,
+    "T1_coverage_above_70pct": true,
+    "n_features_in_clearance": true,
+    "no_banned_leakage_columns": true,
+    "nlp_features_at_least_4": 8,
+    "nlp_100pct_row_coverage": true,
+    "kannada_rows_parse_to_>=1_cue": true,
+    "all_artifacts_present": true,
+    "all_pass": true
+  },
+  "feature_counts": {
+    "clearance": 44,
+    "closure": 44,
+    "survival": 44
+  },
+  "artifacts": {
+    "clearance_pkl": "artifacts/clearance_quantile.pkl",
+    "survival_pkl": "artifacts/survival_aft.pkl",
+    "closure_pkl": "artifacts/closure_clf.pkl",
+    "context_pkl": "artifacts/context.pkl",
+    "corridor_risk_csv": "artifacts/corridor_risk.csv",
+    "cascade_edges_csv": "artifacts/cascade_edges.csv",
+    "cascade_meta_json": "artifacts/cascade_meta.json",
+    "nlp_features_parquet": "data/nlp_features.parquet"
+  }
+}

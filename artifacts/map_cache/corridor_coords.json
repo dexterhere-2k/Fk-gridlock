@@ -1,0 +1,112 @@
+{
+  "Mysore Road": {
+    "lat": 12.9858,
+    "lon": 77.521,
+    "name": "Mysore Road"
+  },
+  "Tumkur Road": {
+    "lat": 13.0293,
+    "lon": 77.5365,
+    "name": "Tumkur Road"
+  },
+  "Bellary Road 1": {
+    "lat": 13.0588,
+    "lon": 77.5861,
+    "name": "Bellary Road 1"
+  },
+  "Bellary Road 2": {
+    "lat": 13.0728,
+    "lon": 77.5936,
+    "name": "Bellary Road 2"
+  },
+  "Hosur Road": {
+    "lat": 12.9416,
+    "lon": 77.6252,
+    "name": "Hosur Road"
+  },
+  "ORR East 1": {
+    "lat": 12.994,
+    "lon": 77.716,
+    "name": "ORR East 1"
+  },
+  "ORR East 2": {
+    "lat": 12.9805,
+    "lon": 77.76,
+    "name": "ORR East 2"
+  },
+  "ORR North 1": {
+    "lat": 13.061,
+    "lon": 77.651,
+    "name": "ORR North 1"
+  },
+  "ORR North 2": {
+    "lat": 13.082,
+    "lon": 77.689,
+    "name": "ORR North 2"
+  },
+  "ORR West 1": {
+    "lat": 12.951,
+    "lon": 77.518,
+    "name": "ORR West 1"
+  },
+  "Bannerghata Road": {
+    "lat": 12.905,
+    "lon": 77.602,
+    "name": "Bannerghata Road"
+  },
+  "Hennur Main Road": {
+    "lat": 13.061,
+    "lon": 77.647,
+    "name": "Hennur Main Road"
+  },
+  "Old Madras Road": {
+    "lat": 13.004,
+    "lon": 77.665,
+    "name": "Old Madras Road"
+  },
+  "Old Airport Road": {
+    "lat": 12.958,
+    "lon": 77.651,
+    "name": "Old Airport Road"
+  },
+  "Varthur Road": {
+    "lat": 12.95,
+    "lon": 77.717,
+    "name": "Varthur Road"
+  },
+  "Magadi Road": {
+    "lat": 12.976,
+    "lon": 77.518,
+    "name": "Magadi Road"
+  },
+  "West of Chord Road": {
+    "lat": 12.999,
+    "lon": 77.532,
+    "name": "West of Chord Road"
+  },
+  "CBD 1": {
+    "lat": 12.976,
+    "lon": 77.602,
+    "name": "CBD 1"
+  },
+  "CBD 2": {
+    "lat": 12.965,
+    "lon": 77.602,
+    "name": "CBD 2"
+  },
+  "Airport New South Road": {
+    "lat": 13.199,
+    "lon": 77.706,
+    "name": "Airport New South Road"
+  },
+  "IRR(Thanisandra road)": {
+    "lat": 13.058,
+    "lon": 77.628,
+    "name": "IRR(Thanisandra road)"
+  },
+  "Non-corridor": {
+    "lat": 12.9716,
+    "lon": 77.5946,
+    "name": "Non-corridor"
+  }
+}

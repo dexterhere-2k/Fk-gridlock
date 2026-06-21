@@ -1,0 +1,47 @@
+# Python
+__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.venv
+venv
+
+# Node / frontend
+node_modules
+frontend/dist
+frontend/node_modules
+
+# GridLock
+artifacts/ledger.sqlite3*
+artifacts/learning_log.json
+artifacts/last_retrain.json
+artifacts/llm_features_cache.json
+artifacts/demo_run.json
+data/incidents_*.parquet
+data/nlp_features.parquet
+data/llm_features_cache.json
+
+# Git / OS
+.git
+.gitignore
+.dockerignore
+.env
+.env.*
+.DS_Store
+*.log
+README.md
+scripts/
+tests/
+
+# Keep the trained state
+!artifacts/*.pkl
+!artifacts/*.csv
+!artifacts/cascade_meta.json
+!artifacts/metrics.json
+!artifacts/demo_allocation.json
+!artifacts/calibration.json
+!artifacts/eval_report.json
+!artifacts/map_cache/
+!artifacts/map_geojson/

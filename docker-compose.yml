@@ -1,0 +1,57 @@
+services:
+  api:
+    build:
+      context: .
+      target: api
+    image: gridlock-api:latest
+    container_name: gridlock-api
+    expose:
+      - "8000"
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - gridlock_artifacts:/app/artifacts
+      - gridlock_data:/app/data:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://127.0.0.1:8000/api/health', timeout=4).raise_for_status()"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  frontend:
+    build:
+      context: .
+      target: frontend
+    image: gridlock-frontend:latest
+    container_name: gridlock-frontend
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "80:80"
+      - "5173:80"   # dev parity — same UI on the dev-port the README mentions
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://127.0.0.1/healthz"]
+      interval: 15s
+      timeout: 4s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  gridlock_artifacts:
+    name: gridlock_artifacts
+  gridlock_data:
+    name: gridlock_data

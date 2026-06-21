@@ -1,0 +1,11 @@
+{
+  "image_width": 548,
+  "image_height": 592,
+  "min_lat": 12.84,
+  "max_lat": 13.22,
+  "min_lon": 77.44,
+  "max_lon": 77.8,
+  "zoom": 11,
+  "source": "OpenStreetMap tile.openstreetmap.org (public, no key)",
+  "fetched_at": "2026-06-21T11:19:16Z"
+}

@@ -1,0 +1,195 @@
+{
+  "n_corridors": 18,
+  "n_hours": 2350,
+  "n_edges": 117,
+  "n_edges_raw": 145,
+  "lags_hours": [
+    1,
+    2,
+    3
+  ],
+  "p_threshold": 0.05,
+  "min_corridor_events": 80,
+  "trigger_rank": [
+    {
+      "corridor": "Non-corridor",
+      "downstream_count": 12,
+      "max_r": 0.19244311723411942
+    },
+    {
+      "corridor": "ORR North 2",
+      "downstream_count": 12,
+      "max_r": 0.1076217448874833
+    },
+    {
+      "corridor": "Mysore Road",
+      "downstream_count": 10,
+      "max_r": 0.2809996325591812
+    },
+    {
+      "corridor": "Tumkur Road",
+      "downstream_count": 9,
+      "max_r": 0.13679571817604602
+    },
+    {
+      "corridor": "ORR East 2",
+      "downstream_count": 8,
+      "max_r": 0.16872107597944563
+    },
+    {
+      "corridor": "Bellary Road 1",
+      "downstream_count": 8,
+      "max_r": 0.11852092810099199
+    },
+    {
+      "corridor": "West of Chord Road",
+      "downstream_count": 8,
+      "max_r": 0.07376156178899562
+    },
+    {
+      "corridor": "ORR North 1",
+      "downstream_count": 7,
+      "max_r": 0.09572947999836333
+    },
+    {
+      "corridor": "ORR East 1",
+      "downstream_count": 6,
+      "max_r": 0.11265997519802166
+    },
+    {
+      "corridor": "Bannerghata Road",
+      "downstream_count": 5,
+      "max_r": 0.31689484495812337
+    },
+    {
+      "corridor": "ORR West 1",
+      "downstream_count": 5,
+      "max_r": 0.1404331973135917
+    },
+    {
+      "corridor": "Magadi Road",
+      "downstream_count": 5,
+      "max_r": 0.08907202664032722
+    },
+    {
+      "corridor": "Hennur Main Road",
+      "downstream_count": 5,
+      "max_r": 0.0609866228808506
+    },
+    {
+      "corridor": "IRR(Thanisandra road)",
+      "downstream_count": 4,
+      "max_r": 0.25773742930559423
+    },
+    {
+      "corridor": "Hosur Road",
+      "downstream_count": 4,
+      "max_r": 0.12175991171602421
+    },
+    {
+      "corridor": "Bellary Road 2",
+      "downstream_count": 4,
+      "max_r": 0.07492217371908934
+    },
+    {
+      "corridor": "Old Madras Road",
+      "downstream_count": 4,
+      "max_r": 0.07319462747620761
+    },
+    {
+      "corridor": "CBD 2",
+      "downstream_count": 1,
+      "max_r": 0.04228982047985142
+    }
+  ],
+  "strongest_edges": [
+    {
+      "source": "Bannerghata Road",
+      "target": "IRR(Thanisandra road)",
+      "lag_h": 2,
+      "r": 0.31689484495812337,
+      "p": 6.331721403048169e-56,
+      "n_pairs": 2348
+    },
+    {
+      "source": "Mysore Road",
+      "target": "ORR East 1",
+      "lag_h": 1,
+      "r": 0.2809996325591812,
+      "p": 7.017330165868738e-44,
+      "n_pairs": 2349
+    },
+    {
+      "source": "IRR(Thanisandra road)",
+      "target": "Hosur Road",
+      "lag_h": 3,
+      "r": 0.25773742930559423,
+      "p": 6.325293463426259e-37,
+      "n_pairs": 2347
+    },
+    {
+      "source": "Non-corridor",
+      "target": "IRR(Thanisandra road)",
+      "lag_h": 1,
+      "r": 0.19244311723411942,
+      "p": 4.953596227400595e-21,
+      "n_pairs": 2349
+    },
+    {
+      "source": "Bannerghata Road",
+      "target": "Hosur Road",
+      "lag_h": 3,
+      "r": 0.1889388632962772,
+      "p": 2.6638897727521986e-20,
+      "n_pairs": 2347
+    },
+    {
+      "source": "Non-corridor",
+      "target": "ORR East 1",
+      "lag_h": 1,
+      "r": 0.18429241806163923,
+      "p": 2.166868390391621e-19,
+      "n_pairs": 2349
+    },
+    {
+      "source": "ORR East 2",
+      "target": "Bannerghata Road",
+      "lag_h": 1,
+      "r": 0.16872107597944563,
+      "p": 1.8404296481158463e-16,
+      "n_pairs": 2349
+    },
+    {
+      "source": "Bannerghata Road",
+      "target": "Non-corridor",
+      "lag_h": 1,
+      "r": 0.1551687886958512,
+      "p": 3.959176949445779e-14,
+      "n_pairs": 2349
+    },
+    {
+      "source": "Mysore Road",
+      "target": "Non-corridor",
+      "lag_h": 1,
+      "r": 0.15182383450172662,
+      "p": 1.389074606731401e-13,
+      "n_pairs": 2349
+    },
+    {
+      "source": "Non-corridor",
+      "target": "Hosur Road",
+      "lag_h": 1,
+      "r": 0.1465827504411309,
+      "p": 9.39013491865508e-13,
+      "n_pairs": 2349
+    }
+  ],
+  "strongest_chains": [
+    "Bannerghata Road --2h r=0.32--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road --3h r=0.12--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road --3h r=0.12--> IRR(Thanisandra road)",
+    "Bellary Road 1 --1h r=0.12--> Non-corridor --1h r=0.19--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road --3h r=0.12--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road",
+    "Bellary Road 2 --1h r=0.07--> Magadi Road --1h r=0.09--> Mysore Road --1h r=0.28--> ORR East 1 --1h r=0.11--> Non-corridor --1h r=0.19--> IRR(Thanisandra road)",
+    "CBD 2 --1h r=0.04--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road --3h r=0.12--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road --3h r=0.12--> IRR(Thanisandra road)",
+    "Hennur Main Road --1h r=0.06--> ORR East 1 --1h r=0.11--> Non-corridor --1h r=0.19--> IRR(Thanisandra road) --3h r=0.26--> Hosur Road --3h r=0.12--> IRR(Thanisandra road)"
+  ],
+  "honesty_note": "r in [0.10, 0.32] = early-warning nudge, not a deterministic forecast. Lagged Pearson does not rule out shared rush-hour confounding \u2014 harden with hour-of-day partials or Granger."
+}

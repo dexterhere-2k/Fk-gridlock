@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+*.cover
+*.so
+build/
+dist/
+
+# Virtualenv
+.venv/
+venv/
+env/
+
+# Node
+node_modules/
+frontend/node_modules/
+frontend/dist/
+*.tsbuildinfo
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# OS
+Thumbs.db
+
+# GridLock: regenerateable artifacts (NOT the trained model bundle)
+artifacts/ledger.sqlite3
+artifacts/ledger.sqlite3-journal
+artifacts/learning_log.json
+artifacts/last_retrain.json
+artifacts/llm_features_cache.json
+artifacts/demo_run.json
+artifacts/eval_report.json
+artifacts/calibration.json
+data/incidents_*.parquet
+data/nlp_features.parquet
+data/llm_features_cache.json
+
+# GridLock: COMMITTED (the frozen trained state, spec 06)
+# artifacts/clearance_quantile.pkl
+# artifacts/survival_aft.pkl
+# artifacts/closure_clf.pkl
+# artifacts/context.pkl
+# artifacts/corridor_risk.csv
+# artifacts/cascade_edges.csv
+# artifacts/cascade_meta.json
+# artifacts/metrics.json
+# artifacts/demo_allocation.json
+# artifacts/map_cache/*
+# artifacts/map_geojson/*

@@ -1,0 +1,384 @@
+{
+  "tight_scenario": {
+    "events": [
+      {
+        "id": "E01",
+        "corridor": "ORR East 1",
+        "cause": "procession",
+        "p50_min": 80.10185439379677,
+        "p90_min": 217.73337846210774,
+        "closure_prob": 0.16644824056730817,
+        "corridor_risk": 0.2673505874740428,
+        "is_planned": true
+      },
+      {
+        "id": "E02",
+        "corridor": "ORR North 1",
+        "cause": "water_logging",
+        "p50_min": 73.27977913932472,
+        "p90_min": 223.32878187809825,
+        "closure_prob": 0.08415994212478557,
+        "corridor_risk": 0.3209932975112867,
+        "is_planned": false
+      },
+      {
+        "id": "E03",
+        "corridor": "CBD 1",
+        "cause": "tree_fall",
+        "p50_min": 84.87354921940212,
+        "p90_min": 215.01466603069517,
+        "closure_prob": 0.45036206034840165,
+        "corridor_risk": 0.2858408046410005,
+        "is_planned": false
+      }
+    ],
+    "n_units": 20,
+    "ilp_allocation": {
+      "status": "Optimal",
+      "solve_time_s": 0.0181,
+      "objective": 851.4,
+      "events": {
+        "E01": {
+          "officers": 9,
+          "officer_ids": [
+            "U001",
+            "U002",
+            "U010",
+            "U011",
+            "U014",
+            "U015",
+            "U017",
+            "U019",
+            "U020"
+          ],
+          "barricades": 0,
+          "diversion_route": null,
+          "pre_deploy_lead_time": 60,
+          "need": 9,
+          "understaffed_by": 0,
+          "because": [
+            "need=9 officers, assigned=9 (gap=0, priority_mult=3.4)",
+            "pre-deploy lead time 60 min (cascade earliest)"
+          ]
+        },
+        "E02": {
+          "officers": 8,
+          "officer_ids": [
+            "U003",
+            "U004",
+            "U005",
+            "U006",
+            "U008",
+            "U009",
+            "U013",
+            "U018"
+          ],
+          "barricades": 0,
+          "diversion_route": null,
+          "pre_deploy_lead_time": 60,
+          "need": 8,
+          "understaffed_by": 0,
+          "because": [
+            "need=8 officers, assigned=8 (gap=0, priority_mult=1.8)",
+            "pre-deploy lead time 60 min (cascade earliest)"
+          ]
+        },
+        "E03": {
+          "officers": 1,
+          "officer_ids": [
+            "U016"
+          ],
+          "barricades": 6,
+          "diversion_route": "nearest parallel arterial",
+          "pre_deploy_lead_time": 0,
+          "need": 8,
+          "understaffed_by": 7,
+          "because": [
+            "need=8 officers, assigned=1 (gap=7, priority_mult=2.0)",
+            "barricades=6 (closure_tier=HIGH, closure_prob=45%)",
+            "diversion to nearest parallel arterial"
+          ]
+        }
+      },
+      "summary": {
+        "total_officers_deployed": 18,
+        "total_barricades": 6,
+        "pool_cap": 20,
+        "n_events": 3,
+        "n_units": 20,
+        "pre_positioned_corridors": []
+      }
+    },
+    "naive_baseline": {
+      "E01": {
+        "officers": 6,
+        "barricades": 0,
+        "diversion_route": null,
+        "need": 9
+      },
+      "E02": {
+        "officers": 7,
+        "barricades": 0,
+        "diversion_route": null,
+        "need": 8
+      },
+      "E03": {
+        "officers": 5,
+        "barricades": 6,
+        "diversion_route": "nearest parallel arterial",
+        "need": 8
+      }
+    },
+    "naive_score": 1084.56,
+    "ilp_score": 860.44,
+    "improvement_pct": 20.66
+  },
+  "plenty_scenario": {
+    "events": [
+      {
+        "id": "E01",
+        "corridor": "ORR East 1",
+        "cause": "procession",
+        "p50_min": 80.10185439379677,
+        "p90_min": 217.73337846210774,
+        "closure_prob": 0.16644824056730817,
+        "corridor_risk": 0.2673505874740428,
+        "is_planned": true
+      },
+      {
+        "id": "E02",
+        "corridor": "ORR North 1",
+        "cause": "water_logging",
+        "p50_min": 73.27977913932472,
+        "p90_min": 223.32878187809825,
+        "closure_prob": 0.08415994212478557,
+        "corridor_risk": 0.3209932975112867,
+        "is_planned": false
+      },
+      {
+        "id": "E03",
+        "corridor": "CBD 1",
+        "cause": "tree_fall",
+        "p50_min": 84.87354921940212,
+        "p90_min": 215.01466603069517,
+        "closure_prob": 0.45036206034840165,
+        "corridor_risk": 0.2858408046410005,
+        "is_planned": false
+      }
+    ],
+    "n_units": 40,
+    "ilp_allocation": {
+      "status": "Optimal",
+      "solve_time_s": 0.0234,
+      "objective": -6.93,
+      "events": {
+        "E01": {
+          "officers": 9,
+          "officer_ids": [
+            "U001",
+            "U002",
+            "U010",
+            "U011",
+            "U014",
+            "U025",
+            "U029",
+            "U035",
+            "U036"
+          ],
+          "barricades": 0,
+          "diversion_route": null,
+          "pre_deploy_lead_time": 60,
+          "need": 9,
+          "understaffed_by": 0,
+          "because": [
+            "need=9 officers, assigned=9 (gap=0, priority_mult=3.4)",
+            "pre-deploy lead time 60 min (cascade earliest)"
+          ]
+        },
+        "E02": {
+          "officers": 8,
+          "officer_ids": [
+            "U005",
+            "U013",
+            "U018",
+            "U020",
+            "U023",
+            "U026",
+            "U034",
+            "U040"
+          ],
+          "barricades": 0,
+          "diversion_route": null,
+          "pre_deploy_lead_time": 60,
+          "need": 8,
+          "understaffed_by": 0,
+          "because": [
+            "need=8 officers, assigned=8 (gap=0, priority_mult=1.8)",
+            "pre-deploy lead time 60 min (cascade earliest)"
+          ]
+        },
+        "E03": {
+          "officers": 8,
+          "officer_ids": [
+            "U008",
+            "U009",
+            "U019",
+            "U021",
+            "U022",
+            "U031",
+            "U032",
+            "U039"
+          ],
+          "barricades": 6,
+          "diversion_route": "nearest parallel arterial",
+          "pre_deploy_lead_time": 0,
+          "need": 8,
+          "understaffed_by": 0,
+          "because": [
+            "need=8 officers, assigned=8 (gap=0, priority_mult=2.0)",
+            "barricades=6 (closure_tier=HIGH, closure_prob=45%)",
+            "diversion to nearest parallel arterial"
+          ]
+        }
+      },
+      "summary": {
+        "total_officers_deployed": 25,
+        "total_barricades": 6,
+        "pool_cap": 40,
+        "n_events": 3,
+        "n_units": 40,
+        "pre_positioned_corridors": []
+      }
+    },
+    "solve_time_s": 0.0234
+  },
+  "realistic_scenario": {
+    "events": [
+      {
+        "id": "RE01",
+        "corridor": "Mysore Road",
+        "cause": "tree_fall",
+        "p50_min": 54.0,
+        "p90_min": 292.0,
+        "closure_prob": 0.598,
+        "corridor_risk": 0.416,
+        "is_planned": false
+      },
+      {
+        "id": "RE02",
+        "corridor": "Tumkur Road",
+        "cause": "vip_movement",
+        "p50_min": 39.0,
+        "p90_min": 315.0,
+        "closure_prob": 0.429,
+        "corridor_risk": 0.134,
+        "is_planned": true
+      },
+      {
+        "id": "RE03",
+        "corridor": "ORR East 1",
+        "cause": "accident",
+        "p50_min": 20.0,
+        "p90_min": 145.0,
+        "closure_prob": 0.24,
+        "corridor_risk": 0.267,
+        "is_planned": false
+      }
+    ],
+    "ilp_allocation": {
+      "status": "Optimal",
+      "solve_time_s": 0.0241,
+      "objective": 721.72,
+      "events": {
+        "RE01": {
+          "officers": 10,
+          "officer_ids": [
+            "RU001",
+            "RU002",
+            "RU004",
+            "RU006",
+            "RU011",
+            "RU014",
+            "RU015",
+            "RU016",
+            "RU019",
+            "RU020"
+          ],
+          "barricades": 6,
+          "diversion_route": "Magadi Road",
+          "pre_deploy_lead_time": 60,
+          "need": 10,
+          "understaffed_by": 0,
+          "because": [
+            "need=10 officers, assigned=10 (gap=0, priority_mult=2.0)",
+            "barricades=6 (closure_tier=HIGH, closure_prob=60%)",
+            "diversion to Magadi Road",
+            "pre-deploy lead time 60 min (cascade earliest)"
+          ]
+        },
+        "RE02": {
+          "officers": 10,
+          "officer_ids": [
+            "RU003",
+            "RU005",
+            "RU007",
+            "RU008",
+            "RU009",
+            "RU010",
+            "RU012",
+            "RU013",
+            "RU017",
+            "RU018"
+          ],
+          "barricades": 6,
+          "diversion_route": "West of Chord Road",
+          "pre_deploy_lead_time": 60,
+          "need": 12,
+          "understaffed_by": 2,
+          "because": [
+            "need=12 officers, assigned=10 (gap=2, priority_mult=4.8)",
+            "barricades=6 (closure_tier=HIGH, closure_prob=43%)",
+            "diversion to West of Chord Road",
+            "pre-deploy lead time 60 min (cascade earliest)"
+          ]
+        },
+        "RE03": {
+          "officers": 0,
+          "officer_ids": [],
+          "barricades": 0,
+          "diversion_route": "nearest parallel arterial",
+          "pre_deploy_lead_time": 60,
+          "need": 5,
+          "understaffed_by": 5,
+          "because": [
+            "need=5 officers, assigned=0 (gap=5, priority_mult=1.8)",
+            "diversion to nearest parallel arterial",
+            "pre-deploy lead time 60 min (cascade earliest)"
+          ]
+        }
+      },
+      "summary": {
+        "total_officers_deployed": 20,
+        "total_barricades": 12,
+        "pool_cap": 20,
+        "n_events": 3,
+        "n_units": 20,
+        "pre_positioned_corridors": []
+      }
+    },
+    "naive_score": 1741.87,
+    "ilp_score": 753.65,
+    "improvement_pct": 56.73
+  },
+  "definition_of_done": {
+    "feasible_allocation": true,
+    "solved_under_1s_for_3_events_40_officers": true,
+    "respects_pool_cap": true,
+    "all_min_officers_met": true,
+    "barricades_match_closure_tier": true,
+    "improvement_vs_naive_or_equal": true,
+    "feasible_plenty_budget": true,
+    "realistic_event_solve_succeeds": true,
+    "realistic_solve_under_1s": true
+  }
+}
