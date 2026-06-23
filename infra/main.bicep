@@ -263,7 +263,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
 // Role Assignments
 // ============================================================================
 // Grant ACA identity access to ACR (AcrPull)
-module acrPullRole 'br/public:avm/res/authorization/role-assignment:0.1.0' = {
+module acrPullRole 'br/public:avm/res/authorization/role-assignment:0.2.0' = {
   name: 'acrPullRoleDeploy'
   scope: rg
   params: {
@@ -274,7 +274,7 @@ module acrPullRole 'br/public:avm/res/authorization/role-assignment:0.1.0' = {
 }
 
 // Grant ACA identity access to storage account (StorageFileDataPrivilegedContributor)
-module storageContributorRole 'br/public:avm/res/authorization/role-assignment:0.1.0' = {
+module storageContributorRole 'br/public:avm/res/authorization/role-assignment:0.2.0' = {
   name: 'storageContributorRoleDeploy'
   scope: rg
   params: {
