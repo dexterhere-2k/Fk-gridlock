@@ -507,6 +507,15 @@ def create_app() -> FastAPI:
         finally:
             _ws_clients["count"] -= 1
 
+    # ----------------------------------------------------------------- plan
+    # Simulate command-center endpoints (synthetic physics-grounded).
+    # forecast is clearly labeled `synthetic: true` in the response —
+    # it does NOT use the trained ML models; real predictions still
+    # flow through /api/clearance-risk. See src/api/plan.py for the
+    # physics-grounded distance-decay + arrival curve generator.
+    from src.api.plan import build_router as build_plan_router
+    app.include_router(build_plan_router())
+
     return app
 
 

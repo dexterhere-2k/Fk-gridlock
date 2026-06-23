@@ -170,7 +170,7 @@ CASCADE_MIN_CORRIDOR_EVENTS = 80
 CASCADE_LAGS = (1, 2, 3)  # hours
 CASCADE_P_THRESHOLD = 0.05
 
-# Cause-based closure / barricade tier lookup (per FINDINGS §6 + astram-pulse).
+# Cause-based closure / barricade tier lookup (per FINDINGS §6).
 # Used as a rule prior alongside the learned closure classifier.
 CAUSE_CLOSURE_RATE = {
     "vip_movement":      0.80,

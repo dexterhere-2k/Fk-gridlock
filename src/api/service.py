@@ -126,6 +126,41 @@ SLA_MINUTES = {
 DEFAULT_SLA = 60
 
 
+def _seed_astram_outcomes(ledger):
+    """Load real ASTraM labeled rows as outcomes on first startup.
+
+    The ASTraM CSV has ~2,527 rows with valid clearance times (real
+    outcomes). We load them into the ledger so the learning loop
+    (Debrief tab) shows per-cause MAE based on real data immediately,
+    without needing the user to manually seed demo outcomes.
+    """
+    if ledger.count_outcomes() > 100:  # already seeded
+        return
+    try:
+        import uuid
+        from src.config import CLEAN_PARQUET
+        df = pd.read_parquet(CLEAN_PARQUET)
+        labeled = df[df["duration_min"].notna() & (df["duration_min"] > 0)]
+        if labeled.empty:
+            return
+        n = 0
+        for _, row in labeled.iterrows():
+            if n >= 500:  # cap at 500 to keep startup fast
+                break
+            ledger.log_outcome(
+                str(uuid.uuid4()),
+                {
+                    "actual_p50_min": float(row["duration_min"]),
+                    "actual_closure": bool(row.get("status", "") == "closed"),
+                },
+                notes=f"astram: {row.get('corridor','?')} / {row.get('event_cause','?')}",
+            )
+            n += 1
+        print(f"[gridlock] seeded {n} ASTraM outcomes into ledger", flush=True)
+    except Exception as e:
+        print(f"[gridlock] outcome seeding skipped: {e}", flush=True)
+
+
 class ServiceError(Exception):
     """User-facing error from the service layer (mapped to 4xx in the API)."""
 
@@ -155,6 +190,9 @@ class Service:
         from .ledger import Ledger
         ledger_path = (artifacts_dir or C.ARTIFACTS_DIR) / "ledger.sqlite3"
         self.ledger = Ledger(ledger_path)
+        # Pre-load real ASTraM labeled rows as outcomes so the learning
+        # loop has live data from first load (not synthetic).
+        _seed_astram_outcomes(self.ledger)
 
     # ----------------------------------------------------------------- health
     def health(self) -> dict:
