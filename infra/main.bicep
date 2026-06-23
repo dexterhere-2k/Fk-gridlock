@@ -153,12 +153,12 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
     name: acaName
     location: location
     tags: tags
+    environmentId: containerAppEnv.outputs.resourceId
     managedIdentities: {
       userAssignedResourceIds: [
         managedIdentity.outputs.resourceId
       ]
     }
-    environmentResourceId: containerAppEnv.outputs.resourceId
     containers: [
       {
         name: 'gridlock'
@@ -194,22 +194,46 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
             mountPath: '/app/artifacts'
           }
         ]
+        probes: [
+          {
+            type: 'Startup'
+            httpGet: {
+              path: '/api/health'
+              port: 80
+            }
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 12
+          }
+          {
+            type: 'Liveness'
+            httpGet: {
+              path: '/api/health'
+              port: 80
+            }
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          }
+          {
+            type: 'Readiness'
+            httpGet: {
+              path: '/healthz'
+              port: 80
+            }
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          }
+        ]
       }
     ]
-    secrets: [
-      {
-        name: 'mappls-rest-key'
-        value: mapplsRestKey
-      }
-      {
-        name: 'mappls-client-id'
-        value: mapplsClientId
-      }
-      {
-        name: 'mappls-client-secret'
-        value: mapplsClientSecret
-      }
-    ]
+    secrets: {
+      'mappls-rest-key': mapplsRestKey
+      'mappls-client-id': mapplsClientId
+      'mappls-client-secret': mapplsClientSecret
+    }
     ingress: {
       external: true
       targetPort: 80
@@ -230,37 +254,6 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
         mountOptions: 'uid=0,gid=0,file_mode=0755,dir_mode=0755'
       }
     ]
-    startupProbe: {
-      type: 'Http'
-      httpGet: {
-        path: '/api/health'
-        port: 80
-      }
-      initialDelaySeconds: 15
-      periodSeconds: 10
-      timeoutSeconds: 5
-      failureThreshold: 12
-    }
-    livenessProbe: {
-      type: 'Http'
-      httpGet: {
-        path: '/api/health'
-        port: 80
-      }
-      periodSeconds: 30
-      timeoutSeconds: 5
-      failureThreshold: 3
-    }
-    readinessProbe: {
-      type: 'Http'
-      httpGet: {
-        path: '/healthz'
-        port: 80
-      }
-      periodSeconds: 10
-      timeoutSeconds: 3
-      failureThreshold: 3
-    }
     scaleMinReplicas: 0
     scaleMaxReplicas: 2
   }
@@ -270,7 +263,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
 // Role Assignments
 // ============================================================================
 // Grant ACA identity access to ACR (AcrPull)
-module acrPullRole 'br/public:avm/res/authorization/role-assignment:0.2.0' = {
+module acrPullRole 'br/public:avm/res/authorization/role-assignment:0.1.1' = {
   name: 'acrPullRoleDeploy'
   scope: rg
   params: {
@@ -281,7 +274,7 @@ module acrPullRole 'br/public:avm/res/authorization/role-assignment:0.2.0' = {
 }
 
 // Grant ACA identity access to storage account (StorageFileDataPrivilegedContributor)
-module storageContributorRole 'br/public:avm/res/authorization/role-assignment:0.2.0' = {
+module storageContributorRole 'br/public:avm/res/authorization/role-assignment:0.1.1' = {
   name: 'storageContributorRoleDeploy'
   scope: rg
   params: {
