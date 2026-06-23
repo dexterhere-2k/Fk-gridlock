@@ -7,13 +7,13 @@
 #   3. Set subscription:                az account set -s <subscription-id>
 #
 # Usage:
-#   ./deploy.sh              # deploy with defaults (prod, westeurope)
+#   ./deploy.sh              # deploy with defaults (prod, centralindia)
 #   ./deploy.sh dev          # deploy dev environment
 #   ./deploy.sh prod eastus  # deploy prod to East US
 set -euo pipefail
 
 ENVIRONMENT="${1:-prod}"
-LOCATION="${2:-westeurope}"
+LOCATION="${2:-centralindia}"
 APP_NAME="gridlock"
 DEPLOYMENT_NAME="gridlock-${ENVIRONMENT}-$(date +%Y%m%d-%H%M%S)"
 

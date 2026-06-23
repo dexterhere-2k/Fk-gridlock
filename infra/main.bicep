@@ -1,7 +1,7 @@
 targetScope = 'subscription'
 
 @description('Azure region for all resources')
-param location string = 'westeurope'
+param location string = 'centralindia'
 
 @description('Short name prefix')
 param appName string = 'gridlock'

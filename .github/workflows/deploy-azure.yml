@@ -67,12 +67,12 @@ jobs:
 
           az deployment sub create \
             --name "gridlock-ci-pre-${GITHUB_RUN_ID}" \
-            --location westeurope \
+            --location centralindia \
             --template-file infra/main.bicep \
             --parameters \
               appName="${APP_NAME}" \
               environment=prod \
-              location=westeurope \
+              location=centralindia \
               deployContainerApp=false \
               mapplsRestKey="${MAPPLS_REST_KEY:-}" \
               mapplsClientId="${MAPPLS_CLIENT_ID:-}" \
@@ -142,12 +142,12 @@ jobs:
 
           az deployment sub create \
             --name "gridlock-ci-post-${GITHUB_RUN_ID}" \
-            --location westeurope \
+            --location centralindia \
             --template-file infra/main.bicep \
             --parameters \
               appName="${APP_NAME}" \
               environment=prod \
-              location=westeurope \
+              location=centralindia \
               deployContainerApp=true \
               imageTag="${IMAGE_TAG}" \
               mapplsRestKey="${MAPPLS_REST_KEY:-}" \
