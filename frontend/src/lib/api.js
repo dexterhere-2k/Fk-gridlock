@@ -110,6 +110,17 @@ export const api = {
     request("/api/learning/retrain", { method: "POST" }),
   debrief: (event_id) =>
     request(`/api/debrief/${encodeURIComponent(event_id)}`),
+
+  // Simulate command center (synthetic, not ML)
+  getPlanVenues: () => request("/api/plan/venues"),
+  getPlanEventTypes: () => request("/api/plan/event-types"),
+  getPlanWeather: () => request("/api/plan/weather-options"),
+  simulatePlan: (scenario) =>
+    request("/api/plan/simulate", { method: "POST", body: JSON.stringify(scenario) }),
+
+  // Live-view timeline scrubber
+  getReplayTimeline: (hours = 24) =>
+    request(`/api/replay/timeline?hours=${hours}`),
 };
 
 export default api;

@@ -4,6 +4,7 @@
 
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Sun, Moon, HelpCircle, LayoutDashboard } from "lucide-react";
 import { api, ApiError } from "../lib/api.js";
 import { TOUR_EVENT } from "../lib/tourSteps.js";
 
@@ -11,8 +12,7 @@ const NAV = [
   { to: "/",           label: "Live",     icon: "🛰" },
   { to: "/predict",    label: "Predict",  icon: "🎯" },
   { to: "/allocate",   label: "Allocate", icon: "⚖" },
-  { to: "/schedule",   label: "Schedule", icon: "🗓" },
-  { to: "/ops",        label: "Ops",      icon: "🎛" },
+  { to: "/simulate",   label: "Simulate", icon: "▦" },
   { to: "/debrief",    label: "Debrief",  icon: "📈" },
 ];
 
@@ -30,8 +30,8 @@ export function Header() {
   }, []);
 
   return (
-    <header data-tour="header" className="sticky top-0 z-30 border-b border-ink-800 bg-ink-950/80 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
+    <header data-tour="header" className="sticky top-0 z-30 shrink-0 border-b border-ink-800 bg-ink-950/80 backdrop-blur">
+      <div className="flex w-full items-center gap-4 px-4 py-3">
         <Link to="/" className="flex items-center gap-2">
           <div className="grid h-7 w-7 place-items-center rounded-md bg-accent-600 text-white shadow-glow">
             <span className="text-sm font-bold">G</span>
@@ -64,10 +64,55 @@ export function Header() {
         <div className="ml-auto flex items-center gap-3">
           <HealthPill health={health} />
           <HelpButton />
+          <ThemeToggle />
           <RoleToggle />
         </div>
       </div>
     </header>
+  );
+}
+
+function HelpButton() {
+  return (
+    <button
+      onClick={() => window.dispatchEvent(new CustomEvent(TOUR_EVENT))}
+      aria-label="Start onboarding tour"
+      title="Take the tour"
+      className="grid h-7 w-7 place-items-center rounded-md border border-ink-700 bg-ink-900 text-ink-300 transition hover:border-ink-600 hover:bg-ink-800 hover:text-ink-50"
+    >
+      <HelpCircle size={14} />
+    </button>
+  );
+}
+
+function ThemeToggle() {
+  const [dark, setDark] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const saved = localStorage.getItem("theme");
+    if (saved === "light") return false;
+    if (saved === "dark") return true;
+    return true; // dark default per spec
+  });
+  useEffect(() => {
+    const root = document.documentElement;
+    if (dark) {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("theme", dark ? "dark" : "light");
+    // Notify other components (e.g. the Leaflet map) that theme changed
+    window.dispatchEvent(new CustomEvent("theme-change", { detail: dark ? "dark" : "light" }));
+  }, [dark]);
+  return (
+    <button
+      onClick={() => setDark((d) => !d)}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      title={dark ? "Switch to light mode" : "Switch to dark mode"}
+      className="grid h-7 w-7 place-items-center rounded-md border border-ink-700 bg-ink-900 text-ink-300 transition hover:border-ink-600 hover:bg-ink-800 hover:text-ink-50"
+    >
+      {dark ? <Sun size={14} /> : <Moon size={14} />}
+    </button>
   );
 }
 
@@ -84,19 +129,6 @@ function HealthPill({ health }) {
         · {health.n_cascade_edges ?? "–"} edges
       </span>
     </div>
-  );
-}
-
-function HelpButton() {
-  return (
-    <button
-      onClick={() => window.dispatchEvent(new CustomEvent(TOUR_EVENT))}
-      aria-label="Start onboarding tour"
-      title="Take the tour"
-      className="grid h-7 w-7 place-items-center rounded-md border border-ink-700 bg-ink-900 text-ink-300 transition hover:border-ink-600 hover:bg-ink-800 hover:text-ink-50"
-    >
-      <span className="text-sm font-bold">?</span>
-    </button>
   );
 }
 

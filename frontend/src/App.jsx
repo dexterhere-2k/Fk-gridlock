@@ -4,22 +4,20 @@ import Tour from "./components/Tour.jsx";
 import LiveView from "./pages/LiveView.jsx";
 import PredictView from "./pages/PredictView.jsx";
 import AllocateView from "./pages/AllocateView.jsx";
-import ScheduleView from "./pages/ScheduleView.jsx";
 import DebriefView from "./pages/DebriefView.jsx";
-import OpsView from "./pages/OpsView.jsx";
+import SimulateView from "./pages/SimulateView.jsx";
 
 export default function App() {
   return (
-    <div className="min-h-screen">
+    <div className="flex h-screen flex-col">
       <Header />
-      <main className="mx-auto max-w-7xl px-4 py-4">
+      <main className="flex-1 min-h-0 overflow-hidden">
         <Routes>
           <Route path="/"          element={<LiveView />} />
           <Route path="/predict"   element={<PredictView />} />
           <Route path="/allocate"  element={<AllocateView />} />
-          <Route path="/schedule"  element={<ScheduleView />} />
+          <Route path="/simulate"  element={<SimulateView />} />
           <Route path="/debrief"   element={<DebriefView />} />
-          <Route path="/ops"       element={<OpsView />} />
           <Route path="*"          element={<LiveView />} />
         </Routes>
       </main>

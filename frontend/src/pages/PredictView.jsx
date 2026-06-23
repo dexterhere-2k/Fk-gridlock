@@ -60,7 +60,7 @@ export default function PredictView() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto p-3">
       <PageHeader
         title="Predict clearance & closure"
         subtitle="Single-incident clearance range (P10/P50/P90) + closure probability + NLP-parsed cues"

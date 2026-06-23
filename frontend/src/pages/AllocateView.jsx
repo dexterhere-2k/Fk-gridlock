@@ -86,7 +86,7 @@ export default function AllocateView() {
   };
 
   return (
-    <div data-tour="allocate" className="space-y-4">
+    <div data-tour="allocate" className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto p-3">
       <PageHeader
         title="Allocate resources across concurrent events"
         subtitle="PuLP ILP — jointly minimizes expected congestion-minutes under one shared budget, with cascade pre-positioning"

@@ -1,6 +1,7 @@
 // View 5 — Debrief: plan vs actual + accuracy trend (the learning loop).
-// Hits /api/accuracy for the live accuracy readout and /api/debrief/{id}
-// for a per-incident deep dive.
+// Hits /api/accuracy for live accuracy, /api/debrief/{id} for per-incident
+// deep dive, /api/learning/signal for per-cause drift, and
+// /api/learning/retrain to trigger model retraining.
 
 import { useEffect, useState } from "react";
 import { api } from "../lib/api.js";
@@ -19,20 +20,39 @@ export default function DebriefView() {
   const [stations, setStations] = useState([]);
   const [debriefPin, setDebriefPin] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [signal, setSignal] = useState(null);
+  const [retraining, setRetraining] = useState(false);
 
   const refresh = async () => {
     try {
-      const [acc, rc, ms] = await Promise.all([
+      const [acc, rc, ms, sig] = await Promise.all([
         api.accuracy(), api.riskCorridors(), api.mapStations(),
+        api.learningSignal().catch(() => null),
       ]);
       setAccuracy(acc);
       setOutcomes(acc.points || []);
       setCorridors(rc.corridors || []);
       setStations((ms.geojson?.features || []).map((f) => f.properties));
+      if (sig) {
+        // Response shape: { signal: {...}, retrain_triggered, trigger_reason, last_run }
+        setSignal({
+          ...(sig.signal || sig),
+          retrain_triggered: sig.retrain_triggered,
+          trigger_reason: sig.trigger_reason,
+          last_run: sig.last_run,
+        });
+      }
     } catch (e) { setError(e); }
   };
 
-  useEffect(() => { refresh(); }, []);
+  useEffect(() => { refresh(); const t = setInterval(refresh, 15000); return () => clearInterval(t); }, []);
+
+  const handleRetrain = async () => {
+    setRetraining(true);
+    try { await api.retrain(); await refresh(); }
+    catch (e) { setError(e); }
+    finally { setRetraining(false); }
+  };
 
   const submit = async () => {
     if (!eventId) return;
@@ -71,7 +91,7 @@ export default function DebriefView() {
   };
 
   return (
-    <div data-tour="debrief" className="space-y-4">
+    <div data-tour="debrief" className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto p-3">
       <PageHeader
         title="Debrief & learning loop"
         subtitle="Plan-vs-actual variance + accuracy trend over the prediction ledger"
@@ -98,7 +118,7 @@ export default function DebriefView() {
             <div className="label mb-0.5">event_id</div>
             <input className="input w-72" value={eventId}
                    onChange={(e) => setEventId(e.target.value)}
-                   placeholder="INC-1" />
+                   placeholder="pick from samples below" />
           </label>
           <button className="btn-primary" onClick={submit} disabled={busy || !eventId}>
             {busy ? "Looking up…" : "Get debrief"}
@@ -106,12 +126,88 @@ export default function DebriefView() {
           <button className="btn-secondary" onClick={seedOutcome} disabled={busy || !eventId}>
             + log sample outcome
           </button>
+          {outcomes.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 text-[11px] text-ink-400">
+              <span>recent:</span>
+              {outcomes.slice(0, 5).map((o) => (
+                <button key={o.event_id} onClick={() => setEventId(o.event_id)}
+                        className="rounded border border-ink-700 bg-ink-900 px-2 py-0.5 text-ink-200 hover:bg-ink-800 transition cursor-pointer font-mono">{o.event_id.slice(0, 16)}…</button>
+              ))}
+            </div>
+          )}
+          {outcomes.length === 0 && (
+            <p className="text-[11px] text-ink-500">No outcomes in the ledger yet. Log one with the button above, or score an event in Predict first.</p>
+          )}
         </div>
         {debrief && <DebriefPanel debrief={debrief} debriefPin={debriefPin}
                               corridors={corridors} stations={stations} />}
       </section>
 
       {outcomes.length > 0 && <OutcomesTable outcomes={outcomes} />}
+
+      {/* Learning loop: per-cause drift + retrain trigger */}
+      {signal && (
+        <section className="card p-4">
+          <h2 className="mb-3 text-sm font-semibold text-ink-100">Learning loop</h2>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <MetricCard label="Outcomes logged" value={signal.n_outcomes}
+                        sub="since last retrain" />
+            <MetricCard label="Global P50 MAE"
+                        value={signal.global_p50_mae_min != null ? `${signal.global_p50_mae_min}m` : "–"}
+                        sub="predicted vs actual" accent />
+            <MetricCard label="Closure accuracy"
+                        value={signal.global_closure_accuracy != null
+                               ? `${(signal.global_closure_accuracy * 100).toFixed(0)}%` : "–"}
+                        sub="closure prediction" />
+            <MetricCard label="Retrain trigger"
+                        value={signal.retrain_triggered ? "YES" : "no"}
+                        sub={signal.trigger_reason || "waiting for data"}
+                        accent={signal.retrain_triggered} />
+          </div>
+
+          {signal.per_cause && Object.keys(signal.per_cause).length > 0 && (
+            <div className="mt-3">
+              <h3 className="mb-1 text-[11px] uppercase tracking-wider text-ink-400">Per-cause drift</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-[10px] uppercase tracking-wider text-ink-500">
+                    <tr>
+                      <th className="py-1 pr-3">cause</th>
+                      <th className="py-1 pr-3 text-right">n</th>
+                      <th className="py-1 pr-3 text-right">p50 mae</th>
+                      <th className="py-1 pr-3 text-right">closure acc</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(signal.per_cause)
+                      .sort((a, b) => b[1].n - a[1].n)
+                      .slice(0, 8)
+                      .map(([cause, stats]) => (
+                        <tr key={cause} className="border-t border-ink-800">
+                          <td className="py-1.5 pr-3 num text-ink-200">{cause}</td>
+                          <td className="py-1.5 pr-3 text-right num text-ink-300">{stats.n}</td>
+                          <td className="py-1.5 pr-3 text-right num">{stats.p50_mae_min}m</td>
+                          <td className="py-1.5 pr-3 text-right num text-ink-300">
+                            {(stats.closure_accuracy * 100).toFixed(0)}%
+                          </td>
+                        </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          <button
+            className="btn-primary mt-3"
+            onClick={handleRetrain}
+            disabled={retraining || !signal.retrain_triggered}
+            title={signal.trigger_reason || ""}
+          >
+            {retraining ? "Retraining…" : "Retrain model"}
+          </button>
+        </section>
+      )}
     </div>
   );
 }
