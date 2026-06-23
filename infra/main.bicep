@@ -219,7 +219,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
           {
             type: 'Readiness'
             httpGet: {
-              path: '/healthz'
+              path: '/api/health'
               port: 80
             }
             periodSeconds: 10
@@ -234,7 +234,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
       'mappls-client-id': mapplsClientId
       'mappls-client-secret': mapplsClientSecret
     }
-    ingress: {
+    ingressSettings: {
       external: true
       targetPort: 80
       transport: 'auto'
@@ -263,23 +263,23 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
 // Role Assignments
 // ============================================================================
 // Grant ACA identity access to ACR (AcrPull)
-module acrPullRole 'br/public:avm/res/authorization/role-assignment:0.2.0' = {
-  name: 'acrPullRoleDeploy'
+resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(rg.id, managedIdentity.outputs.principalId, '7f951dda-4ed3-4680-a7ca-43fe172d538d')
   scope: rg
-  params: {
+  properties: {
     principalId: managedIdentity.outputs.principalId
-    roleDefinitionIdOrName: '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d'
+    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d'
     principalType: 'ServicePrincipal'
   }
 }
 
 // Grant ACA identity access to storage account (StorageFileDataPrivilegedContributor)
-module storageContributorRole 'br/public:avm/res/authorization/role-assignment:0.2.0' = {
-  name: 'storageContributorRoleDeploy'
+resource storageContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(rg.id, managedIdentity.outputs.principalId, 'b8eda974-7b85-4f76-af95-8a5ca8d8c081')
   scope: rg
-  params: {
+  properties: {
     principalId: managedIdentity.outputs.principalId
-    roleDefinitionIdOrName: '/providers/Microsoft.Authorization/roleDefinitions/b8eda974-7b85-4f76-af95-8a5ca8d8c081'
+    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/b8eda974-7b85-4f76-af95-8a5ca8d8c081'
     principalType: 'ServicePrincipal'
   }
 }
