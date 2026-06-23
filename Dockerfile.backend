@@ -24,13 +24,4 @@ COPY artifacts/  ./artifacts/
 
 ENV PYTHONPATH=/app
 
-CMD ["sh", "-c", "\
-  echo '>>> Starting uvicorn on port ${PORT:-8000} ...' && \
-  echo '>>> Files in /app:' && ls -la /app/ && \
-  echo '>>> Artifacts:' && ls -la /app/artifacts/ && \
-  echo '>>> Data:' && ls -la /app/data/ && \
-  echo '>>> Testing import...' && \
-  python -c 'from api.main import app; print(\"import OK\")' && \
-  echo '>>> Running uvicorn...' && \
-  exec uvicorn api.main:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1 --log-level debug \
-"]
+CMD ["sh", "-c", "echo 'Starting on port' $PORT && hypercorn api.main:app --bind [::]:${PORT:-8000}"]
