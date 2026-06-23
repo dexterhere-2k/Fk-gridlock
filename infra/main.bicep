@@ -58,7 +58,7 @@ module logAnalytics 'br/public:avm/res/operational-insights/workspace:0.1.0' = {
     name: logAnalyticsName
     location: location
     tags: tags
-    sku: 'PerGB2018'
+    pricingTier: 'PerGB2018'
   }
 }
 
@@ -72,8 +72,8 @@ module acr 'br/public:avm/res/container-registry/registry:0.5.1' = {
     name: acrName
     location: location
     tags: tags
-    sku: 'Basic'
-    adminUserEnabled: true
+    acrSku: 'Basic'
+    acrAdminUserEnabled: true
   }
 }
 
@@ -81,6 +81,7 @@ module acr 'br/public:avm/res/container-registry/registry:0.5.1' = {
 // User-Assigned Managed Identity
 // ============================================================================
 resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  scope: rg
   name: identityName
   location: location
   tags: tags
@@ -90,6 +91,7 @@ resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-
 // Key Vault (for Mappls secrets)
 // ============================================================================
 resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
+  scope: rg
   name: kvName
   location: location
   tags: tags
@@ -104,6 +106,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
 // Storage Account + File Share for artifacts persistence
 // ============================================================================
 resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  scope: rg
   name: storageName
   location: location
   kind: 'StorageV2'
@@ -116,6 +119,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 }
 
 resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = {
+  scope: rg
   name: '${storageName}/default/${fileShareName}'
   properties: {
     shareQuota: 5
@@ -127,6 +131,7 @@ resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-0
 // Container Apps Environment
 // ============================================================================
 resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
+  scope: rg
   name: acaEnvName
   location: location
   tags: tags
@@ -134,8 +139,8 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
-        customerId: logAnalytics.outputs.workspaceCustomerId
-        sharedKey: logAnalytics.outputs.workspacePrimarySharedKey
+        customerId: logAnalytics.outputs.workspaceId
+        sharedKey: logAnalytics.outputs.sharedKey
       }
     }
   }
@@ -145,6 +150,7 @@ resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
 // Container App
 // ============================================================================
 resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
+  scope: rg
   name: acaName
   location: location
   tags: tags
@@ -277,8 +283,8 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = {
 // Role assignments — ACA identity can pull from ACR
 // ============================================================================
 resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(acr.outputs.id, managedIdentity.id, 'AcrPull')
-  scope: acr.outputs
+  scope: acr
+  name: guid(acr.id, managedIdentity.id, 'AcrPull')
   properties: {
     principalId: managedIdentity.properties.principalId
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dda-4ed3-4680-a7ca-43fe172d538d') // AcrPull
@@ -288,8 +294,8 @@ resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 
 // Grant ACA identity access to storage account (for Azure Files mount)
 resource storageContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(storageAccount.id, managedIdentity.id, 'StorageFileDataPrivilegedContributor')
   scope: storageAccount
+  name: guid(storageAccount.id, managedIdentity.id, 'StorageFileDataPrivilegedContributor')
   properties: {
     principalId: managedIdentity.properties.principalId
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'b8eda974-7b85-4f76-af95-8a5ca8d8c081')
