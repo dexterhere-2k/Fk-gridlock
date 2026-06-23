@@ -41,8 +41,6 @@ jobs:
 
       # ======================================================================
       # Azure login via OIDC (federated credential on the Entra ID app).
-      # No client secret needed — GitHub's OIDC token is exchanged for
-      # an Azure access token using the federated credential.
       # ======================================================================
       - name: Azure login
         uses: azure/login@v2
@@ -52,13 +50,21 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # ======================================================================
+      # Validate Bicep template compiles before deploying
+      # ======================================================================
+      - name: Validate Bicep template
+        run: |
+          az bicep build --file infra/main.bicep --stdout > /dev/null
+          echo "Bicep compilation succeeded"
+
+      # ======================================================================
       # Deploy Bicep infra - Phase 1: Deploy ACR & Shared Infra (without Container App)
       # ======================================================================
       - name: Deploy ACR & Shared Infrastructure
         id: infra-pre
         run: |
           set -euo pipefail
-          
+
           az deployment sub create \
             --name "gridlock-ci-pre-${GITHUB_RUN_ID}" \
             --location westeurope \
@@ -72,7 +78,7 @@ jobs:
               mapplsClientId="${MAPPLS_CLIENT_ID:-}" \
               mapplsClientSecret="${MAPPLS_CLIENT_SECRET:-}" \
             --query "properties.outputs" -o json > /tmp/bicep-outputs.json
-          
+
           ACR_NAME=$(python3 -c "import sys,json; print(json.load(sys.stdin)['acrName']['value'])" < /tmp/bicep-outputs.json)
           echo "acr_name=${ACR_NAME}" >> $GITHUB_OUTPUT
           echo "acr_server=${ACR_NAME}.azurecr.io" >> $GITHUB_OUTPUT
@@ -87,14 +93,14 @@ jobs:
       - name: Login to ACR
         run: |
           set -euo pipefail
-          
+
           ACR_NAME="${{ steps.infra-pre.outputs.acr_name }}"
           ACR_SERVER="${{ steps.infra-pre.outputs.acr_server }}"
-          
+
           if [ -z "$ACR_NAME" ] && [ -n "$ACR_SERVER" ]; then
             ACR_NAME="${ACR_SERVER%%.*}"
           fi
-          
+
           if [ -z "$ACR_NAME" ]; then
             echo "::error::ACR name not found. Diagnostic information follows."
             echo "steps.infra-pre.outputs.acr_name='${{ steps.infra-pre.outputs.acr_name }}'"
@@ -104,7 +110,7 @@ jobs:
             echo "Ensure the Bicep deploy step succeeded and Azure login is valid."
             exit 1
           fi
-          
+
           echo "Logging into ACR: $ACR_NAME"
           az acr login --name "$ACR_NAME"
 
@@ -132,7 +138,7 @@ jobs:
         id: infra-post
         run: |
           set -euo pipefail
-          
+
           az deployment sub create \
             --name "gridlock-ci-post-${GITHUB_RUN_ID}" \
             --location westeurope \
@@ -154,13 +160,13 @@ jobs:
         run: |
           RG="rg-${APP_NAME}-${{ github.event.inputs.environment || 'prod' }}"
           ACA="ca-${APP_NAME}-${{ github.event.inputs.environment || 'prod' }}"
-          
+
           echo "Waiting for Container App revision to activate..."
           sleep 15
-          
+
           FQDN=$(az containerapp show -n "${ACA}" -g "${RG}" \
             --query "properties.configuration.ingress.fqdn" -o tsv)
-          
+
           echo "Health checking https://${FQDN}/api/health ..."
           for i in $(seq 1 20); do
             if curl -fsS "https://${FQDN}/api/health" >/dev/null 2>&1; then
@@ -168,11 +174,14 @@ jobs:
               curl -s "https://${FQDN}/api/health" | python3 -m json.tool
               exit 0
             fi
-            echo "  ... waiting (attempt ${i}/20)"
+            echo " ... waiting (attempt ${i}/20)"
             sleep 6
           done
-          
+
           echo "✗ Health check failed after 20 attempts"
+          # Dump container logs for debugging
+          echo "=== Container App logs (last 50 lines) ==="
+          az containerapp logs show -n "${ACA}" -g "${RG}" --tail 50 || true
           exit 1
 
       # ======================================================================
@@ -185,12 +194,12 @@ jobs:
           ACA="ca-${APP_NAME}-${{ github.event.inputs.environment || 'prod' }}"
           FQDN=$(az containerapp show -n "${ACA}" -g "${RG}" \
             --query "properties.configuration.ingress.fqdn" -o tsv 2>/dev/null || echo "unknown")
-          
+
           echo "=========================================="
-          echo "  GridLock — Azure Deployment Summary"
+          echo " GridLock — Azure Deployment Summary"
           echo "=========================================="
-          echo "  Image:      ${{ steps.infra-pre.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}"
-          echo "  FQDN:       https://${FQDN}"
-          echo "  Resource:   ${RG}/${ACA}"
-          echo "  Workflow:   ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo " Image: ${{ steps.infra-pre.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}"
+          echo " FQDN: https://${FQDN}"
+          echo " Resource: ${RG}/${ACA}"
+          echo " Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           echo "=========================================="

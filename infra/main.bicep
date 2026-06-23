@@ -34,7 +34,6 @@ var acaName = 'ca-${appName}-${environment}'
 var storageName = 'st${appName}${uniqueString(subscription().subscriptionId)}'
 var fileShareName = 'artifacts'
 var logAnalyticsName = 'log-${appName}-${environment}'
-var kvName = 'kv-${appName}${uniqueString(subscription().subscriptionId)}'
 var identityName = 'id-${appName}-${environment}'
 var tags = {
   app: appName
@@ -54,262 +53,255 @@ resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
 // ============================================================================
 // Log Analytics Workspace (for Container Apps monitoring)
 // ============================================================================
-module logAnalytics 'br/public:avm/res/operational-insights/workspace:0.3.0' = {
-  name: 'logAnalyticsDeploy'
-  scope: rg
-  params: {
-    name: logAnalyticsName
-    location: location
-    tags: tags
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+  name: logAnalyticsName
+  location: location
+  tags: tags
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
   }
 }
 
 // ============================================================================
 // User-Assigned Managed Identity
 // ============================================================================
-module managedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.2.0' = {
-  name: 'managedIdentityDeploy'
-  scope: rg
-  params: {
-    name: identityName
-    location: location
-    tags: tags
-  }
+resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-07-31-preview' = {
+  name: identityName
+  location: location
+  tags: tags
 }
 
 // ============================================================================
 // Container Registry
 // ============================================================================
-module acr 'br/public:avm/res/container-registry/registry:0.5.1' = {
-  name: 'acrDeploy'
-  scope: rg
-  params: {
-    name: acrName
-    location: location
-    tags: tags
-    acrSku: 'Basic'
-    acrAdminUserEnabled: true
-    roleAssignments: [
-      {
-        roleDefinitionIdOrName: 'AcrPull'
-        principalId: managedIdentity.outputs.principalId
-        principalType: 'ServicePrincipal'
-      }
-    ]
+resource acr 'Microsoft.ContainerRegistry/registries@2023-07-01' = {
+  name: acrName
+  location: location
+  tags: tags
+  sku: {
+    name: 'Basic'
+  }
+  properties: {
+    adminUserEnabled: true
   }
 }
 
-// ============================================================================
-// Key Vault (for Mappls secrets)
-// ============================================================================
-module keyVault 'br/public:avm/res/key-vault/vault:0.6.1' = {
-  name: 'keyVaultDeploy'
-  scope: rg
-  params: {
-    name: kvName
-    location: location
-    tags: tags
-    enableRbacAuthorization: true
+// AcrPull role assignment for the managed identity
+resource acrRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: acr
+  name: guid(acr.id, managedIdentity.properties.principalId, '7f951dcc-6d99-4c4e-93d4-3c4c3c3c3c3c')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '7f951dcc-6d99-4c4e-93d4-3c4c3c3c3c3c')
+    principalId: managedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
 // ============================================================================
 // Storage Account + File Share for artifacts persistence
 // ============================================================================
-module storageAccount 'br/public:avm/res/storage/storage-account:0.9.0' = {
-  name: 'storageAccountDeploy'
-  scope: rg
-  params: {
-    name: storageName
-    location: location
-    kind: 'StorageV2'
-    skuName: 'Standard_LRS'
-    tags: tags
+resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
+  name: storageName
+  location: location
+  tags: tags
+  sku: {
+    name: 'Standard_LRS'
+  }
+  kind: 'StorageV2'
+  properties: {
     allowBlobPublicAccess: false
     minimumTlsVersion: 'TLS1_2'
-    fileServices: {
-      shares: [
-        {
-          name: fileShareName
-          shareQuota: 5
-          accessTier: 'Hot'
-        }
-      ]
-    }
-    roleAssignments: [
-      {
-        roleDefinitionIdOrName: 'Storage File Data Privileged Contributor'
-        principalId: managedIdentity.outputs.principalId
-        principalType: 'ServicePrincipal'
-      }
-    ]
+    supportsHttpsTrafficOnly: true
+  }
+}
+
+resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-01-01' = {
+  parent: storageAccount
+  name: fileShareName
+  properties: {
+    shareQuota: 5
+    accessTier: 'Hot'
+  }
+}
+
+// Storage File Data Privileged Contributor role for the managed identity
+resource storageRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  scope: storageAccount
+  name: guid(storageAccount.id, managedIdentity.properties.principalId, '6a3b2337-3c6a-4e6a-8c6a-6a3b23373c6a')
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '6a3b2337-3c6a-4e6a-8c6a-6a3b23373c6a')
+    principalId: managedIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
   }
 }
 
 // ============================================================================
 // Container Apps Environment
 // ============================================================================
-module containerAppEnv 'br/public:avm/res/app/managed-environment:0.4.0' = {
-  name: 'containerAppEnvDeploy'
-  scope: rg
-  params: {
-    name: acaEnvName
-    location: location
-    tags: tags
-    logAnalyticsWorkspaceResourceId: logAnalytics.outputs.resourceId
-  }
-}
-
-// Existing resource references for child storage configuration
-resource storageAccountRes 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
-  name: storageName
-  scope: rg
-}
-
-resource containerAppEnvRes 'Microsoft.App/managedEnvironments@2023-05-01' existing = {
+resource containerAppEnv 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: acaEnvName
-  scope: rg
+  location: location
+  tags: tags
+  properties: {
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalytics.properties.customerId
+        sharedKey: logAnalytics.listKeys().primarySharedKey
+      }
+    }
+  }
+  dependsOn: [
+    logAnalytics
+  ]
 }
 
+// ============================================================================
+// Storage config for the Container Apps Environment (Azure File mount)
+// ============================================================================
 resource envStorage 'Microsoft.App/managedEnvironments/storages@2023-05-01' = {
-  parent: containerAppEnvRes
+  parent: containerAppEnv
   name: storageName
-  scope: rg
   properties: {
     azureFile: {
-      accountName: storageAccount.outputs.name
-      accountKey: storageAccountRes.listKeys().keys[0].value
+      accountName: storageAccount.name
+      accountKey: storageAccount.listKeys().keys[0].value
       shareName: fileShareName
       accessMode: 'ReadWrite'
     }
   }
+  dependsOn: [
+    storageAccount
+    fileShare
+    containerAppEnv
+  ]
 }
 
 // ============================================================================
 // Container App
 // ============================================================================
-module containerApp 'br/public:avm/res/app/container-app:0.4.0' = if (deployContainerApp) {
-  name: 'containerAppDeploy'
-  scope: rg
-  dependsOn: [
-    envStorage
-  ]
-  params: {
-    name: acaName
-    location: location
-    tags: tags
-    environmentId: containerAppEnv.outputs.resourceId
-    managedIdentities: {
-      userAssignedResourceIds: [
-        managedIdentity.outputs.resourceId
+resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployContainerApp) {
+  name: acaName
+  location: location
+  tags: tags
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${managedIdentity.id}': {}
+    }
+  }
+  properties: {
+    environmentId: containerAppEnv.id
+    configuration: {
+      activeRevisionsMode: 'Single'
+      ingress: {
+        external: true
+        targetPort: 80
+        transport: 'auto'
+        allowInsecure: false
+      }
+      registries: [
+        {
+          server: acr.properties.loginServer
+          identity: managedIdentity.id
+        }
+      ]
+      secrets: [
+        { name: 'mappls-rest-key', value: mapplsRestKey }
+        { name: 'mappls-client-id', value: mapplsClientId }
+        { name: 'mappls-client-secret', value: mapplsClientSecret }
       ]
     }
-    containers: [
-      {
-        name: 'gridlock'
-        image: '${acr.outputs.loginServer}/gridlock:${imageTag}'
-        resources: {
-          cpu: json('0.5')
-          memory: '1.0Gi'
+    template: {
+      containers: [
+        {
+          name: 'gridlock'
+          image: '${acr.properties.loginServer}/gridlock:${imageTag}'
+          resources: {
+            cpu: json('0.5')
+            memory: '1.0Gi'
+          }
+          env: [
+            { name: 'PORT', value: '80' }
+            { name: 'PYTHONPATH', value: '/app' }
+            { name: 'GRIDLOCK_LOG_LEVEL', value: 'info' }
+            { name: 'MAPPLS_REST_KEY', secretRef: 'mappls-rest-key' }
+            { name: 'MAPPLS_CLIENT_ID', secretRef: 'mappls-client-id' }
+            { name: 'MAPPLS_CLIENT_SECRET', secretRef: 'mappls-client-secret' }
+            { name: 'GRIDLOCK_LEDGER_PATH', value: '/app/artifacts/ledger.sqlite3' }
+          ]
+          volumeMounts: [
+            {
+              volumeName: 'artifacts-volume'
+              mountPath: '/app/artifacts'
+            }
+          ]
+          probes: [
+            {
+              type: 'Startup'
+              httpGet: {
+                path: '/api/health'
+                port: 80
+              }
+              initialDelaySeconds: 15
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 10
+            }
+            {
+              type: 'Liveness'
+              httpGet: {
+                path: '/api/health'
+                port: 80
+              }
+              periodSeconds: 30
+              timeoutSeconds: 5
+              failureThreshold: 3
+            }
+            {
+              type: 'Readiness'
+              httpGet: {
+                path: '/api/health'
+                port: 80
+              }
+              periodSeconds: 10
+              timeoutSeconds: 3
+              failureThreshold: 3
+            }
+          ]
         }
-        env: [
-          { name: 'PORT', value: '80' }
-          { name: 'PYTHONPATH', value: '/app' }
-          { name: 'GRIDLOCK_LOG_LEVEL', value: 'info' }
-          {
-            name: 'MAPPLS_REST_KEY'
-            secretRef: 'mappls-rest-key'
-          }
-          {
-            name: 'MAPPLS_CLIENT_ID'
-            secretRef: 'mappls-client-id'
-          }
-          {
-            name: 'MAPPLS_CLIENT_SECRET'
-            secretRef: 'mappls-client-secret'
-          }
-          {
-            name: 'GRIDLOCK_LEDGER_PATH'
-            value: '/app/artifacts/ledger.sqlite3'
-          }
-        ]
-        volumeMounts: [
-          {
-            volumeName: 'artifacts-volume'
-            mountPath: '/app/artifacts'
-          }
-        ]
-        probes: [
-          {
-            type: 'Startup'
-            httpGet: {
-              path: '/api/health'
-              port: 80
-            }
-            initialDelaySeconds: 15
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 10
-          }
-          {
-            type: 'Liveness'
-            httpGet: {
-              path: '/api/health'
-              port: 80
-            }
-            periodSeconds: 30
-            timeoutSeconds: 5
-            failureThreshold: 3
-          }
-          {
-            type: 'Readiness'
-            httpGet: {
-              path: '/api/health'
-              port: 80
-            }
-            periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
-          }
-        ]
+      ]
+      volumes: [
+        {
+          name: 'artifacts-volume'
+          storageType: 'AzureFile'
+          storageName: storageName
+          mountOptions: 'uid=0,gid=0,file_mode=0755,dir_mode=0755'
+        }
+      ]
+      scale: {
+        minReplicas: 0
+        maxReplicas: 2
       }
-    ]
-    secrets: {
-      'mappls-rest-key': mapplsRestKey
-      'mappls-client-id': mapplsClientId
-      'mappls-client-secret': mapplsClientSecret
     }
-    ingressExternal: true
-    ingressTargetPort: 80
-    ingressTransport: 'auto'
-    ingressAllowInsecure: false
-    registries: [
-      {
-        server: acr.outputs.loginServer
-        identity: managedIdentity.outputs.resourceId
-      }
-    ]
-    volumes: [
-      {
-        name: 'artifacts-volume'
-        storageType: 'AzureFile'
-        storageName: storageAccount.outputs.name
-        mountOptions: 'uid=0,gid=0,file_mode=0755,dir_mode=0755'
-      }
-    ]
-    scaleMinReplicas: 0
-    scaleMaxReplicas: 2
   }
+  dependsOn: [
+    envStorage
+    acr
+    acrRoleAssignment
+  ]
 }
 
 // ============================================================================
 // Outputs
 // ============================================================================
 output resourceGroupName string = rg.name
-output acrLoginServer string = acr.outputs.loginServer
-output acrName string = acr.outputs.name
-output containerAppFqdn string = deployContainerApp ? containerApp.outputs.fqdn : ''
-output containerAppName string = deployContainerApp ? containerApp.outputs.name : ''
-output storageAccountName string = storageAccount.outputs.name
+output acrLoginServer string = acr.properties.loginServer
+output acrName string = acr.name
+output containerAppFqdn string = deployContainerApp ? containerApp.properties.configuration.ingress.fqdn : ''
+output containerAppName string = deployContainerApp ? containerApp.name : ''
+output storageAccountName string = storageAccount.name
 output fileShareName string = fileShareName
-output keyVaultName string = keyVault.outputs.name
