@@ -204,7 +204,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
             initialDelaySeconds: 15
             periodSeconds: 10
             timeoutSeconds: 5
-            failureThreshold: 12
+            failureThreshold: 10
           }
           {
             type: 'Liveness'
@@ -234,7 +234,7 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
       'mappls-client-id': mapplsClientId
       'mappls-client-secret': mapplsClientSecret
     }
-    ingress: {
+    ingressA: {
       external: true
       targetPort: 80
       transport: 'auto'
@@ -263,24 +263,24 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
 // Role Assignments
 // ============================================================================
 // Grant ACA identity access to ACR (AcrPull)
-module acrPullRole 'br/public:avm/res/authorization/role-assignment:0.1.1' = {
+module acrPullRole 'br/public:avm/res/authorization/role-assignment/rg-scope:0.2.1' = {
   name: 'acrPullRoleDeploy'
   scope: rg
   params: {
     principalId: managedIdentity.outputs.principalId
-    roleDefinitionId: '7f951dda-4ed3-4680-a7ca-43fe172d538d' // AcrPull
-    resourceId: acr.outputs.resourceId
+    roleDefinitionIdOrName: '/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d'
+    principalType: 'ServicePrincipal'
   }
 }
 
 // Grant ACA identity access to storage account (StorageFileDataPrivilegedContributor)
-module storageContributorRole 'br/public:avm/res/authorization/role-assignment:0.1.1' = {
+module storageContributorRole 'br/public:avm/res/authorization/role-assignment/rg-scope:0.2.1' = {
   name: 'storageContributorRoleDeploy'
   scope: rg
   params: {
     principalId: managedIdentity.outputs.principalId
-    roleDefinitionId: 'b8eda974-7b85-4f76-af95-8a5ca8d8c081' // StorageFileDataPrivilegedContributor
-    resourceId: storageAccount.outputs.resourceId
+    roleDefinitionIdOrName: '/providers/Microsoft.Authorization/roleDefinitions/b8eda974-7b85-4f76-af95-8a5ca8d8c081'
+    principalType: 'ServicePrincipal'
   }
 }
 
