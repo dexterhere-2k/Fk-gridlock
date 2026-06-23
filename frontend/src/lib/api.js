@@ -2,7 +2,7 @@
 // parsed JSON body and throws a typed `ApiError` on non-2xx, so the
 // React layer can render the failure mode uniformly.
 
-const BASE = ""; // same-origin via vite dev proxy
+const BASE = import.meta.env.VITE_API_BASE ?? "";
 
 export class ApiError extends Error {
   constructor(message, status, body) {

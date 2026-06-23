@@ -1,9 +1,6 @@
 // React hook for the live-status WebSocket (spec 04 §WS).
 // Replays a stream of corridor risk data; reconnects with
-// exponential backoff on disconnect. The reconnect backoff grows
-// fast and the connection is closed gracefully on page unmount so
-// the server's WebSocket pool doesn't fill up (server caps at 8
-// concurrent clients per `src/api/main.py`).
+// exponential backoff on disconnect.
 
 import { useEffect, useRef, useState } from "react";
 
@@ -12,7 +9,7 @@ const RECONNECT_MAX_MS = 30000;
 const MAX_RECONNECTS = 8;
 
 export function useLiveStatus(url = "/api/ws/live-status") {
-  const [status, setStatus] = useState("connecting"); // connecting | open | closed | error
+  const [status, setStatus] = useState("connecting");
   const [messages, setMessages] = useState([]);
   const wsRef = useRef(null);
   const backoffRef = useRef(RECONNECT_BASE_MS);
@@ -25,12 +22,20 @@ export function useLiveStatus(url = "/api/ws/live-status") {
     const connect = () => {
       if (!alive) return;
       if (reconnectsRef.current >= MAX_RECONNECTS) {
-        // give up gracefully — visible to the user via the "closed" status
         setStatus("closed");
         return;
       }
-      const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-      const fullUrl = `${proto}//${window.location.host}${url}`;
+
+      const apiBase = import.meta.env.VITE_API_BASE;
+      let fullUrl;
+      if (apiBase) {
+        const wsBase = apiBase.replace(/^http/, "ws");
+        fullUrl = `${wsBase}${url}`;
+      } else {
+        const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+        fullUrl = `${proto}//${window.location.host}${url}`;
+      }
+
       let ws;
       try {
         ws = new WebSocket(fullUrl);
@@ -51,7 +56,7 @@ export function useLiveStatus(url = "/api/ws/live-status") {
         if (!alive) return;
         try {
           const data = JSON.parse(ev.data);
-          if (data?.kind === "end") return; // server signals end of replay
+          if (data?.kind === "end") return;
           setMessages((m) => [...m.slice(-50), data]);
         } catch { /* ignore non-JSON */ }
       });
