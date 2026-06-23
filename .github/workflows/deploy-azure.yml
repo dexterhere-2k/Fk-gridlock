@@ -31,7 +31,6 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    environment: ${{ github.event.inputs.environment || 'prod' }}
 
     steps:
       - name: Checkout
