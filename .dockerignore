@@ -31,8 +31,7 @@ data/llm_features_cache.json
 .env.*
 .DS_Store
 *.log
-scripts/
-# README.md, tests/ are intentionally included (copied explicitly in Dockerfile)
+# README.md, tests/, scripts/ are intentionally included (copied explicitly in Dockerfile)
 
 # Keep the trained state
 !artifacts/*.pkl
