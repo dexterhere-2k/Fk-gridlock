@@ -54,6 +54,7 @@ from src.api.service import Service, ServiceError  # noqa: E402
 def create_app() -> FastAPI:
     """Construct the FastAPI app with the standard middleware + routes."""
     service: Optional[Service] = None
+    startup_error_traceback: Optional[str] = None
 
     @asynccontextmanager
     async def lifespan(application: FastAPI):
@@ -61,7 +62,7 @@ def create_app() -> FastAPI:
         # is fast (the cost is paid once). For a "potato" target, you can
         # lazy-load by removing the body of this `try` and calling
         # `Service()` in a request handler instead.
-        nonlocal service
+        nonlocal service, startup_error_traceback
         try:
             service = Service()
             print("[nexgen] service ready: 5 artifacts loaded, "
@@ -69,7 +70,10 @@ def create_app() -> FastAPI:
                   f"{service.health()['n_cascade_edges']} cascade edges",
                   flush=True)
         except Exception as exc:
+            import traceback
+            startup_error_traceback = traceback.format_exc()
             print(f"[nexgen] service load FAILED: {exc}", flush=True)
+            print(startup_error_traceback, flush=True)
             service = None
 
         # spec 08 #2 — background SLA ticker. Watches elapsed time
@@ -117,8 +121,10 @@ def create_app() -> FastAPI:
 
     def _svc() -> Service:
         if service is None:
-            raise HTTPException(status_code=503,
-                                detail="service not loaded (see startup logs)")
+            detail_msg = "service not loaded (see startup logs)"
+            if startup_error_traceback:
+                detail_msg = f"service load FAILED:\n{startup_error_traceback}"
+            raise HTTPException(status_code=503, detail=detail_msg)
         return service
 
     # ----------------------------------------------------------------- /health
