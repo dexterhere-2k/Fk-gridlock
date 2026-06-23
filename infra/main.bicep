@@ -24,6 +24,9 @@ param mapplsClientId string = ''
 @secure()
 param mapplsClientSecret string = ''
 
+@description('Whether to create role assignments (requires User Access Administrator / Owner permissions)')
+param createRoleAssignments bool = true
+
 // ============================================================================
 // Resource Group
 // ============================================================================
@@ -47,6 +50,7 @@ module resources 'resources.bicep' = {
     mapplsRestKey: mapplsRestKey
     mapplsClientId: mapplsClientId
     mapplsClientSecret: mapplsClientSecret
+    createRoleAssignments: createRoleAssignments
   }
 }
 

@@ -74,6 +74,7 @@ jobs:
               environment=prod \
               location=centralindia \
               deployContainerApp=false \
+              createRoleAssignments=false \
               mapplsRestKey="${MAPPLS_REST_KEY:-}" \
               mapplsClientId="${MAPPLS_CLIENT_ID:-}" \
               mapplsClientSecret="${MAPPLS_CLIENT_SECRET:-}" \
@@ -150,6 +151,7 @@ jobs:
               location=centralindia \
               deployContainerApp=true \
               imageTag="${IMAGE_TAG}" \
+              createRoleAssignments=false \
               mapplsRestKey="${MAPPLS_REST_KEY:-}" \
               mapplsClientId="${MAPPLS_CLIENT_ID:-}" \
               mapplsClientSecret="${MAPPLS_CLIENT_SECRET:-}"

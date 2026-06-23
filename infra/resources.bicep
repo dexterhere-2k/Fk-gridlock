@@ -8,6 +8,7 @@ param appName string
 param environment string
 param imageTag string
 param deployContainerApp bool
+param createRoleAssignments bool = true
 
 @secure()
 param mapplsRestKey string = ''
@@ -90,7 +91,7 @@ resource fileShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-0
 // ============================================================================
 // Role Assignments
 // ============================================================================
-resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (createRoleAssignments) {
   scope: acr
   name: guid('acrpull', managedIdentity.id)
   properties: {
