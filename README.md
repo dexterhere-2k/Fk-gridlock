@@ -113,8 +113,9 @@ the closed post-event feedback loop ASTraM never had.
 | ML | scikit-learn, lifelines (CoxPH), PuLP (ILP) | CPU-only, pip-installable |
 | Database | SQLite | One file, zero setup |
 | Frontend | React 18 + Vite + TailwindCSS | Lightweight SPA |
-| Maps | Vanilla Leaflet (L.map) + Carto tiles | No dependency issues |
-| Routing | OSRM public API | Free, road-following, no auth |
+| Maps | Vanilla Leaflet + Carto tiles (OSM) | MapmyIndia key limited to DM only |
+| Routing | OSRM public API | Fallback; Mappls routing unavailable with current key |
+| Distance Matrix | MapmyIndia (Mappls) REST API | Only Mappls product live with provided key |
 | NLP | Python regex + keyword lexicon | No GPU, full coverage |
 | Realtime | FastAPI WebSocket | Replay-driven demo |
 
@@ -163,9 +164,11 @@ cd frontend && npm install && npm run dev
 
 - **Data limitation**: Only 31% of ASTraM rows have clearance labels. We use
   CoxPH survival analysis to handle the 69% censored.
-- **Mappls limitation**: The Mappls REST key authorizes only the Distance
-  Matrix product. Base map tiles use Carto (OSM), routing uses OSRM.
-  Production would use the full Mappls SDK.
+- **Mappls usage**: The provided MapmyIndia REST key authorizes the Distance
+  Matrix API (live, used for corridor distance calculations). Base map tiles
+  use Carto (OSM tier). Road-following diversion routes use OSRM public API
+  — Mappls routing endpoints return 404 with this key. All three would use
+  the full Mappls SDK in production.
 - **Simulate tab**: Uses a synthetic physics model (distance-decay + arrival/
   dispersal curves). Clearly labeled in the UI. Real predictions are in the
   Predict and Allocate tabs.
