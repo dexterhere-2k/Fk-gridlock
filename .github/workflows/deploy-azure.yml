@@ -22,7 +22,6 @@ on:
 env:
   APP_NAME: gridlock
   IMAGE_TAG: ${{ github.sha }}
-  AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
 jobs:
   build-and-deploy:
@@ -35,7 +34,9 @@ jobs:
         uses: actions/checkout@v4
 
       # ======================================================================
-      # Azure login via OIDC (no secrets — federated credential on the SP)
+      # Azure login via OIDC (federated credential on the Entra ID app).
+      # No client secret needed — GitHub's OIDC token is exchanged for
+      # an Azure access token using the federated credential.
       # ======================================================================
       - name: Azure login
         uses: azure/login@v2
@@ -73,11 +74,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Login to ACR
-        uses: azure/docker-login@v2
-        with:
-          login-server: ${{ steps.acr.outputs.acr_server }}
-          username: ${{ steps.acr.outputs.acr_name }}
-          password: ${{ secrets.AZURE_CLIENT_ID }}
+        run: az acr login -n ${{ steps.acr.outputs.acr_name }}
 
       # ======================================================================
       # Build and push the runtime (all-in-one) image
