@@ -29,6 +29,10 @@ var identityName = 'id-${appName}-${environment}'
 
 var acrPullRoleId = '7f951dda-4ed3-4680-a7ca-43fe172d538d'
 
+var actualMapplsRestKey = empty(mapplsRestKey) ? 'dummy' : mapplsRestKey
+var actualMapplsClientId = empty(mapplsClientId) ? 'dummy' : mapplsClientId
+var actualMapplsClientSecret = empty(mapplsClientSecret) ? 'dummy' : mapplsClientSecret
+
 // ============================================================================
 // Log Analytics
 // ============================================================================
@@ -165,9 +169,9 @@ resource containerApp 'Microsoft.App/containerApps@2023-05-01' = if (deployConta
         }
       ]
       secrets: [
-        { name: 'mappls-rest-key', value: mapplsRestKey }
-        { name: 'mappls-client-id', value: mapplsClientId }
-        { name: 'mappls-client-secret', value: mapplsClientSecret }
+        { name: 'mappls-rest-key', value: actualMapplsRestKey }
+        { name: 'mappls-client-id', value: actualMapplsClientId }
+        { name: 'mappls-client-secret', value: actualMapplsClientSecret }
       ]
     }
     template: {
