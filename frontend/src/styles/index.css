@@ -2,12 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================================
+   Theme variables — dark by default (ops dashboard convention).
+   Light mode via `<html class="">`. Existing `ink-*` and accent tokens
+   remain for backward compatibility across all views.
+   ============================================================================ */
+:root {
+  --background: #f8f7f4;            /* warm cream */
+  --panel: rgba(255, 255, 255, 0.85);
+  --panel-2: #ffffff;
+  --border: rgba(232, 230, 223, 0.8);
+  --foreground: #1c1a17;
+  --muted: #7e7970;
+  --accent: #e85d04;                /* deep orange accent */
+  --accent-foreground: #ffffff;
+  --panel-shadow: 0 8px 30px rgba(28, 26, 23, 0.04), 0 1px 3px rgba(28, 26, 23, 0.02);
+  color-scheme: light;
+}
+html.dark {
+  --background: #0c0b0a;            /* warm obsidian */
+  --panel: rgba(20, 19, 18, 0.8);
+  --panel-2: #141312;
+  --border: rgba(38, 36, 33, 0.7);
+  --foreground: #f5f4f2;
+  --muted: #8d8980;
+  --accent: #e85d04;
+  --accent-foreground: #ffffff;
+  --panel-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.15);
+  color-scheme: dark;
+}
+
 @layer base {
-  :root {
-    color-scheme: dark;
-  }
   body {
     font-feature-settings: "cv11", "ss01", "ss03";
+    background: var(--background);
+    color: var(--foreground);
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
   /* darker scrollbar in dark mode */
   ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -18,42 +49,183 @@
   ::-webkit-scrollbar-thumb:hover { background: theme("colors.ink.600"); }
 }
 
-@layer components {
-  .card {
-    @apply rounded-xl border border-ink-800 bg-ink-900/60 shadow-card;
-  }
-  .card-tight {
-    @apply rounded-lg border border-ink-800 bg-ink-900/40;
-  }
-  .label {
-    @apply text-[10px] font-medium uppercase tracking-wider text-ink-400;
-  }
-  .pill {
-    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium;
-  }
-  .pill-good { @apply pill bg-good-500/15 text-good-500 ring-1 ring-good-500/30; }
-  .pill-warn { @apply pill bg-warn-500/15 text-warn-500 ring-1 ring-warn-500/30; }
-  .pill-bad  { @apply pill bg-bad-500/15  text-bad-500  ring-1 ring-bad-500/30;  }
-  .pill-accent{ @apply pill bg-accent-500/15 text-accent-400 ring-1 ring-accent-500/30;}
-  .pill-ink   { @apply pill bg-ink-700 text-ink-200 ring-1 ring-ink-600;        }
-  .btn {
-    @apply inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm
-           font-medium transition focus:outline-none focus:ring-2
-           focus:ring-accent-500/40 disabled:opacity-50 disabled:cursor-not-allowed;
-  }
-  .btn-primary  { @apply btn bg-accent-600 text-white hover:bg-accent-500; }
-  .btn-secondary{ @apply btn bg-ink-800 text-ink-100 hover:bg-ink-700 ring-1 ring-ink-700; }
-  .btn-ghost    { @apply btn text-ink-200 hover:bg-ink-800; }
-  .input, .select, .textarea {
-    @apply w-full rounded-md border border-ink-700 bg-ink-900 px-3 py-1.5
-           text-sm text-ink-100 placeholder:text-ink-500
-           focus:border-accent-500 focus:ring-1 focus:ring-accent-500/40
-           focus:outline-none;
-  }
-  .stat {
-    @apply text-2xl font-semibold tabular-nums tracking-tight;
-  }
-  .num {
-    @apply font-mono tabular-nums;
-  }
+/* ============================================================================
+
+   ============================================================================ */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
 }
+input[type="range"]:focus { outline: none; }
+input[type="range"]::-webkit-slider-runnable-track {
+  background: transparent !important;
+  height: 4px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--foreground);
+  height: 14px;
+  width: 14px;
+  border-radius: 50%;
+  margin-top: -5px;
+  border: 2px solid var(--background);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease, background-color 0.3s ease;
+}
+input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.2); }
+input[type="range"]::-moz-range-track { background: transparent !important; height: 4px; }
+input[type="range"]::-moz-range-thumb {
+  background: var(--foreground);
+  height: 14px;
+  width: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--background);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.1s ease, background-color 0.3s ease;
+}
+input[type="range"]:hover::-moz-range-thumb { transform: scale(1.2); }
+
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: var(--panel-2);
+  margin: 0;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  display: grid;
+  place-content: center;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+input[type="checkbox"]::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  transform: scale(0);
+  transition: 120ms transform ease-in-out;
+  box-shadow: inset 1em 1em var(--accent-foreground);
+  background-color: currentColor;
+  transform-origin: center;
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+}
+input[type="checkbox"]:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+input[type="checkbox"]:checked::before { transform: scale(1); }
+input[type="checkbox"]:focus-visible { outline: 2px solid var(--border); outline-offset: 2px; }
+
+/* ============================================================================
+   Leaflet theming (so the map matches the dashboard)
+   ============================================================================ */
+.leaflet-container {
+  background: var(--background) !important;
+  font-family: inherit;
+  transition: background-color 0.3s ease;
+}
+/* Failed tiles: outline them so the user can see which ones didn't load */
+.leaflet-tile:not(.leaflet-tile-loaded) {
+  outline: 1px solid rgba(244, 63, 94, 0.4);
+  outline-offset: -1px;
+}
+.leaflet-control-attribution { display: none !important; }
+.leaflet-bar a {
+  background: var(--panel) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.leaflet-bar a:hover { background: var(--panel-2) !important; }
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--panel) !important;
+  color: var(--foreground) !important;
+  border: 1px solid var(--border);
+  box-shadow: var(--panel-shadow) !important;
+  backdrop-filter: blur(8px);
+  border-radius: 12px !important;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+.leaflet-popup-content { margin: 12px !important; line-height: 1.4 !important; }
+
+/* ============================================================================
+
+   ============================================================================ */
+.junction-label { background: transparent; border: none; }
+.jnode-flat {
+  width: var(--d);
+  height: var(--d);
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.officer-badge {
+  width: 13px; height: 13px;
+  background: rgba(244, 63, 94, 0.92);
+  color: #fff;
+  font-weight: 700; font-size: 7px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+.officer-cluster {
+  width: 18px; height: 18px;
+  background: rgba(244, 63, 94, 0.97);
+  color: #fff;
+  font-weight: 800; font-size: 8px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.barricade-pin {
+  width: 20px; height: 20px;
+  background: var(--foreground);
+  border: 2px solid var(--background);
+  border-radius: 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 800;
+  color: var(--background);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+.venue-pin {
+  width: 26px; height: 26px;
+  background: var(--accent);
+  border: 3px solid var(--background);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800;
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(244, 63, 94, 0.5);
+}
+
+
+@keyframes diversion-dash {
+  to { stroke-dashoffset: -20; }
+}
+.diversion-flow {
+  stroke-dasharray: 6 8;
+  animation: diversion-dash 1.5s linear infinite;
+}
+
+/* Pulsing live indicator */
+@keyframes pulse-ring-cf {
+  0%   { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0;   }
+}
+.live-dot-cf { position: relative; }
+.live-dot-cf::after {
+  content: "";
+  position: absolute; inset: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: pulse-ring-cf 1.8s ease-out infinite;
+}
+
+
+/* No cf-select — using native .input class for selects */
