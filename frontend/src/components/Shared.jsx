@@ -4,7 +4,7 @@
 
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Sun, Moon, HelpCircle, LayoutDashboard } from "lucide-react";
+import { HelpCircle } from "lucide-react";
 import { api, ApiError } from "../lib/api.js";
 import { TOUR_EVENT } from "../lib/tourSteps.js";
 
@@ -37,9 +37,9 @@ export function Header() {
             <span className="text-sm font-bold">G</span>
           </div>
           <div className="flex flex-col leading-tight">
-            <div className="text-sm font-semibold text-ink-50">GridLock</div>
+            <div className="text-sm font-semibold text-ink-50">NexGen</div>
             <div className="text-[10px] uppercase tracking-wider text-ink-400">
-              ASTraM Command Center
+              ASTraM intelligence layer
             </div>
           </div>
         </Link>
@@ -64,7 +64,6 @@ export function Header() {
         <div className="ml-auto flex items-center gap-3">
           <HealthPill health={health} />
           <HelpButton />
-          <ThemeToggle />
           <RoleToggle />
         </div>
       </div>
@@ -81,37 +80,6 @@ function HelpButton() {
       className="grid h-7 w-7 place-items-center rounded-md border border-ink-700 bg-ink-900 text-ink-300 transition hover:border-ink-600 hover:bg-ink-800 hover:text-ink-50"
     >
       <HelpCircle size={14} />
-    </button>
-  );
-}
-
-function ThemeToggle() {
-  const [dark, setDark] = useState(() => {
-    if (typeof window === "undefined") return true;
-    const saved = localStorage.getItem("theme");
-    if (saved === "light") return false;
-    if (saved === "dark") return true;
-    return true; // dark default per spec
-  });
-  useEffect(() => {
-    const root = document.documentElement;
-    if (dark) {
-      root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
-    }
-    localStorage.setItem("theme", dark ? "dark" : "light");
-    // Notify other components (e.g. the Leaflet map) that theme changed
-    window.dispatchEvent(new CustomEvent("theme-change", { detail: dark ? "dark" : "light" }));
-  }, [dark]);
-  return (
-    <button
-      onClick={() => setDark((d) => !d)}
-      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      title={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="grid h-7 w-7 place-items-center rounded-md border border-ink-700 bg-ink-900 text-ink-300 transition hover:border-ink-600 hover:bg-ink-800 hover:text-ink-50"
-    >
-      {dark ? <Sun size={14} /> : <Moon size={14} />}
     </button>
   );
 }

@@ -1,4 +1,4 @@
-"""GridLock — 01: predict.py — single-incident inference glue (used by 04 API).
+"""NexGen — 01: predict.py — single-incident inference glue (used by 04 API).
 
 Contract (per 00_MASTER §4 + 01_DATA_ML_CORE §"predict.py contract"):
 
@@ -407,7 +407,7 @@ def predict_incident(event: dict) -> dict:
 
 def main():
     # --- canonical demo cases (deterministic, no LLM, no network)
-    print("=== GridLock 01+02: predict_incident demo ===\n")
+    print("=== NexGen 01+02: predict_incident demo ===\n")
     cases = [
         {"corridor": "Mysore Road", "event_cause": "vehicle_breakdown",
          "veh_type": "lcv", "zone": "West Zone 1",

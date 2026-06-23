@@ -1,4 +1,4 @@
-"""GridLock — 07: Pre-compute the demo map cache (spec 07 §"Demo-safety").
+"""NexGen — 07: Pre-compute the demo map cache (spec 07 §"Demo-safety").
 
 Per spec 07 §"Demo-safety (critical)":
   "Pre-compute & cache the distance-matrix and diversion routes for
@@ -50,7 +50,7 @@ DEMO_CORRIDOR_PAIRS = [
 
 
 def precompute():
-    print("=== GridLock 07: pre-compute map cache ===\n")
+    print("=== NexGen 07: pre-compute map cache ===\n")
     t0 = time.time()
     n_routes = 0
     for origin, target in DEMO_CORRIDOR_PAIRS:

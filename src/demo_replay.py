@@ -1,4 +1,4 @@
-"""GridLock — 06: Historical replay (time-travel demo feed).
+"""NexGen — 06: Historical replay (time-travel demo feed).
 
 Per spec 06 §"Legit external data → Mock real-time via historical
 replay": the live WebSocket should replay the historical `start_datetime`

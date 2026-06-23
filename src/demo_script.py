@@ -1,4 +1,4 @@
-"""GridLock — 06: 4-minute demo script (per spec 06 §"Demo script").
+"""NexGen — 06: 4-minute demo script (per spec 06 §"Demo script").
 
 Walks the audience through every major component of the system in
 exactly the cadence called out in the spec. Each step is a self-contained
@@ -178,7 +178,7 @@ def step4_debrief():
 
 def step5_close():
     """3:50 — honest close (what production needs)."""
-    print("  │  In production, GridLock needs:")
+    print("  │  In production, NexGen needs:")
     print("  │  • ASTraM's 9,000 cameras + congestion feed (real-time)")
     print("  │  • Mappls live ETA + diversion routing (spec 07)")
     print("  │  • Festival / holiday calendar (rain → water_logging)")
@@ -193,7 +193,7 @@ def step5_close():
 
 def main():
     print("=" * 64)
-    print("  GridLock — 4-minute demo script (per spec 06)")
+    print("  NexGen — 4-minute demo script (per spec 06)")
     print(f"  API base: {API}")
     print(f"  run at:   {datetime.now(tz=timezone.utc).isoformat(timespec='seconds')}")
     print("=" * 64)

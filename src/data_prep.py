@@ -1,4 +1,4 @@
-"""GridLock — 01: Step 1 — Load, clean, derive targets, save chronological parquet.
+"""NexGen — 01: Step 1 — Load, clean, derive targets, save chronological parquet.
 
 Key decisions (per 00_MASTER + 09_DATA_DICTIONARY):
   * Duration = (resolved_datetime ∥ closed_datetime) − start_datetime, in

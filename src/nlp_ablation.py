@@ -1,4 +1,4 @@
-"""GridLock — 02: ablation — clearance with vs without NLP features.
+"""NexGen — 02: ablation — clearance with vs without NLP features.
 
 Per spec 02 §5: "Train clearance model with vs without NLP features; report
 MAE delta (expect a small but real gain on the rows that have rich text)."
@@ -61,7 +61,7 @@ def _evaluate_p50(models, X, y, cap=OP_CAP_MIN):
 
 
 def main():
-    print("=== GridLock 02: NLP ablation ===\n")
+    print("=== NexGen 02: NLP ablation ===\n")
     df = pd.read_parquet(C.FEATURES_PARQUET)
     df = make_split(df)
     df, _ = encode_categoricals(df, fit=True)

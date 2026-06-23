@@ -1,4 +1,4 @@
-"""GridLock — 06: Master eval orchestrator.
+"""NexGen — 06: Master eval orchestrator.
 
 Runs every evaluation step (DoD metrics, ablations, calibration,
 before/after ILP, learning signal) and merges them into one
@@ -19,7 +19,7 @@ REPORT = C.ARTIFACTS_DIR / "eval_report.json"
 
 def main():
     print("=" * 64)
-    print("  GridLock — 06: master eval orchestrator")
+    print("  NexGen — 06: master eval orchestrator")
     print("=" * 64)
     report = {}
 

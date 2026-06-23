@@ -1,4 +1,4 @@
-"""GridLock — 01: Step 2 — Leakage-safe feature engineering.
+"""NexGen — 01: Step 2 — Leakage-safe feature engineering.
 
 Everything here is computable *the moment an incident is reported*. Recurrence
 and corridor-history features are strictly PAST-ONLY: for each row they look

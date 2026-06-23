@@ -1,4 +1,4 @@
-"""GridLock — 01: Target 4 — Congestion cascade / domino graph.
+"""NexGen — 01: Target 4 — Congestion cascade / domino graph.
 
 The single most novel finding (per FINDINGS §8): when a corridor's incident
 count spikes at hour *t*, several other corridors see a correlated surge

@@ -1,4 +1,4 @@
-"""GridLock — 04: SQLite ledger (one file, per spec 00 §"Store").
+"""NexGen — 04: SQLite ledger (one file, per spec 00 §"Store").
 
 Two tables:
   - predictions(id, ts, payload_json, request_json)  — every prediction

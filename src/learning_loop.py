@@ -1,4 +1,4 @@
-"""GridLock — 06: Learning loop (the live "model updates from outcomes").
+"""NexGen — 06: Learning loop (the live "model updates from outcomes").
 
 Per spec 06 §"Debrief → learning loop":
   - log predicted vs actual clearance → nightly retrain → push to MLflow
@@ -148,7 +148,7 @@ def run_retrain() -> dict:
 
 
 def main():
-    print("=== GridLock 06: Learning loop ===\n")
+    print("=== NexGen 06: Learning loop ===\n")
     ledger = Ledger(C.ARTIFACTS_DIR / "ledger.sqlite3")
 
     signal = compute_learning_signal(ledger)

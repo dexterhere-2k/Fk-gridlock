@@ -1,4 +1,4 @@
-"""GridLock — 07: Data-side geo helpers (corridor heatmap, incident pins).
+"""NexGen — 07: Data-side geo helpers (corridor heatmap, incident pins).
 
 Builds the GeoJSON the frontend renders in the MapplsMap component:
 
@@ -150,7 +150,7 @@ def build_police_stations(limit: int = 10) -> dict:
 
 
 def main():
-    print("=== GridLock 07: Geo helpers ===\n")
+    print("=== NexGen 07: Geo helpers ===\n")
     cr = build_corridor_heatmap()
     (MAP_DIR / "corridors.geojson").write_text(
         json.dumps(cr), encoding="utf-8")

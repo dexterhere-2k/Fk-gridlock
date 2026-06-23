@@ -1,4 +1,4 @@
-"""GridLock — 07: Mappls (MapmyIndia) service.
+"""NexGen — 07: Mappls (MapmyIndia) service.
 
 MANDATED PROVIDER per spec 07. We use Mappls for EVERY map/geo
 capability — no Google Maps, no Leaflet+OSM-as-primary, no Mapbox.

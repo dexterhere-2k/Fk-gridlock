@@ -1,4 +1,4 @@
-"""GridLock — 02: Tier-1 rule-based NLP feature extractor (the backbone).
+"""NexGen — 02: Tier-1 rule-based NLP feature extractor (the backbone).
 
 Why this exists: the `description` field is the richest *unused* signal in the
 dataset (6,811 / 8,171 rows = 83% coverage; 870 rows in Kannada script; large

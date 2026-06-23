@@ -1,4 +1,4 @@
-"""GridLock — 04: Pydantic v2 schemas for the FastAPI gateway.
+"""NexGen — 04: Pydantic v2 schemas for the FastAPI gateway.
 
 One schema per endpoint (request + response). Designed to be the
 single source of truth for the contract — `tests/test_api_contract.py`

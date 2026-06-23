@@ -1,4 +1,4 @@
-"""GridLock — 04: Service layer (thin wrapper around the ML core).
+"""NexGen — 04: Service layer (thin wrapper around the ML core).
 
 The HTTP layer (`main.py`) is a thin shell around this. The service:
   - calls `src.predict.predict_incident` for clearance-risk / simulate
@@ -156,9 +156,9 @@ def _seed_astram_outcomes(ledger):
                 notes=f"astram: {row.get('corridor','?')} / {row.get('event_cause','?')}",
             )
             n += 1
-        print(f"[gridlock] seeded {n} ASTraM outcomes into ledger", flush=True)
+        print(f"[nexgen] seeded {n} ASTraM outcomes into ledger", flush=True)
     except Exception as e:
-        print(f"[gridlock] outcome seeding skipped: {e}", flush=True)
+        print(f"[nexgen] outcome seeding skipped: {e}", flush=True)
 
 
 class ServiceError(Exception):
@@ -182,8 +182,8 @@ class Service:
         # ---- travel-time matrix (spec 07) for dispatch ETA + station lookup
         self.travel_matrix = _load_travel_matrix(C.ARTIFACTS_DIR)
         # ---- station + corridor coords for nearest-corridor resolution
-        from ..mappls_service import (DEFAULT_CORRIDOR_COORDS,
-                                       DEFAULT_STATION_COORDS)
+        from src.mappls_service import (DEFAULT_CORRIDOR_COORDS,
+                                         DEFAULT_STATION_COORDS)
         self.corridor_coords = DEFAULT_CORRIDOR_COORDS
         self.station_coords = DEFAULT_STATION_COORDS
         # ---- ledger (SQLite, one file)
@@ -237,7 +237,7 @@ class Service:
         }
         # heuristic diversion target (per spec 03 — pick the next
         # non-incident corridor to redirect traffic into)
-        from ..optimize import _diversion_target
+        from src.optimize import _diversion_target
         if plan["need_diversion"]:
             plan["diversion_to"] = _diversion_target(pred["corridor"])
         # build a short human summary (spec 06 demo script)
@@ -820,8 +820,8 @@ class Service:
         so the dashboard can show "model last retrained at X, MAE was
         Y, current MAE is Z" — the loop is real, not a slide.
         """
-        from ..learning_loop import (compute_learning_signal as _cls,
-                                     should_retrain as _should)
+        from src.learning_loop import (compute_learning_signal as _cls,
+                                       should_retrain as _should)
         sig = _cls(self.ledger)
         log_path = C.ARTIFACTS_DIR / "learning_log.json"
         last_run = None

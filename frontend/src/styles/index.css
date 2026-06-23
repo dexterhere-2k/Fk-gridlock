@@ -2,25 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ============================================================================
-   Theme variables — dark by default (ops dashboard convention).
-   Light mode via `<html class="">`. Existing `ink-*` and accent tokens
-   remain for backward compatibility across all views.
-   ============================================================================ */
+/* Dark-only theme (ops dashboard convention). No light mode toggle. */
 :root {
-  --background: #f8f7f4;            /* warm cream */
-  --panel: rgba(255, 255, 255, 0.85);
-  --panel-2: #ffffff;
-  --border: rgba(232, 230, 223, 0.8);
-  --foreground: #1c1a17;
-  --muted: #7e7970;
-  --accent: #e85d04;                /* deep orange accent */
-  --accent-foreground: #ffffff;
-  --panel-shadow: 0 8px 30px rgba(28, 26, 23, 0.04), 0 1px 3px rgba(28, 26, 23, 0.02);
-  color-scheme: light;
-}
-html.dark {
-  --background: #0c0b0a;            /* warm obsidian */
+  --background: #0c0b0a;
   --panel: rgba(20, 19, 18, 0.8);
   --panel-2: #141312;
   --border: rgba(38, 36, 33, 0.7);
@@ -49,9 +33,46 @@ html.dark {
   ::-webkit-scrollbar-thumb:hover { background: theme("colors.ink.600"); }
 }
 
-/* ============================================================================
+@layer components {
+  .card {
+    @apply rounded-xl border border-ink-800 bg-ink-900/60 shadow-card;
+  }
+  .card-tight {
+    @apply rounded-lg border border-ink-800 bg-ink-900/40;
+  }
+  .label {
+    @apply text-[10px] font-medium uppercase tracking-wider text-ink-400;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium;
+  }
+  .pill-good { @apply pill bg-good-500/15 text-good-500 ring-1 ring-good-500/30; }
+  .pill-warn { @apply pill bg-warn-500/15 text-warn-500 ring-1 ring-warn-500/30; }
+  .pill-bad  { @apply pill bg-bad-500/15  text-bad-500  ring-1 ring-bad-500/30;  }
+  .pill-accent{ @apply pill bg-accent-500/15 text-accent-400 ring-1 ring-accent-500/30;}
+  .pill-ink   { @apply pill bg-ink-700 text-ink-200 ring-1 ring-ink-600;        }
+  .btn {
+    @apply inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm
+           font-medium transition focus:outline-none focus:ring-2
+           focus:ring-accent-500/40 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-primary  { @apply btn bg-accent-600 text-white hover:bg-accent-500; }
+  .btn-secondary{ @apply btn bg-ink-800 text-ink-100 hover:bg-ink-700 ring-1 ring-ink-700; }
+  .btn-ghost    { @apply btn text-ink-200 hover:bg-ink-800; }
+  .input, .select, .textarea {
+    @apply w-full rounded-md border border-ink-700 bg-ink-900 px-3 py-1.5
+           text-sm text-ink-100 placeholder:text-ink-500
+           focus:border-accent-500 focus:ring-1 focus:ring-accent-500/40
+           focus:outline-none;
+  }
+  .stat {
+    @apply text-2xl font-semibold tabular-nums tracking-tight;
+  }
+  .num {
+    @apply font-mono tabular-nums;
+  }
+}
 
-   ============================================================================ */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;

@@ -1,4 +1,4 @@
-"""GridLock — 06: Ablation runner.
+"""NexGen — 06: Ablation runner.
 
 Per spec 06 §"Evaluation plan": "**Ablations** (style after vibhuti
 `evaluate_ablation.py`): with/without NLP, with/without weather."
@@ -139,7 +139,7 @@ def _run_ablation(df, feat_cols, drop_cols, unc, te, split_rng):
 
 
 def main():
-    print("=== GridLock 06: Ablation runner ===\n")
+    print("=== NexGen 06: Ablation runner ===\n")
     df = pd.read_parquet(C.FEATURES_PARQUET)
     df = make_split(df)
     df, _ = encode_categoricals(df, fit=True)

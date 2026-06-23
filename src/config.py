@@ -1,4 +1,4 @@
-"""GridLock — 01: Central config (paths, leakage controls, feature policy, params).
+"""NexGen — 01: Central config (paths, leakage controls, feature policy, params).
 
 The single source of truth for *what the models are allowed to see*. The
 BANNED list is the most important object in the module: `priority` is 99.9%

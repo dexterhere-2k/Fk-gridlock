@@ -1,4 +1,4 @@
-"""GridLock — 04: API contract smoke test.
+"""NexGen — 04: API contract smoke test.
 
 Hits every endpoint (POST + GET) and asserts the response shape matches
 the Pydantic schema in `src/api/schemas.py`. This is the spec 04

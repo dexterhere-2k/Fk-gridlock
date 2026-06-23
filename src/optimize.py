@@ -1,4 +1,4 @@
-"""GridLock — 03: Resource Optimizer (PuLP ILP).
+"""NexGen — 03: Resource Optimizer (PuLP ILP).
 
 Why this exists: the PS asks for "optimal manpower, barricading, and
 diversion" — and there are no resource labels in the data, so this MUST
@@ -192,7 +192,7 @@ def build_problem(events: list[dict], units: list[dict],
     understaff_weight = p.get("understaff_weight", 1.0)
     logger = p.get("logger", False)
 
-    prob = pulp.LpProblem("gridlock_allocation", pulp.LpMinimize)
+    prob = pulp.LpProblem("nexgen_allocation", pulp.LpMinimize)
     E = list(range(len(events)))
     U = list(range(len(units)))
     E_by_id = {e["id"]: i for i, e in enumerate(events)}
@@ -638,7 +638,7 @@ def load_travel_time_matrix() -> dict:
 # Main (the spec 03 DoD demo)
 # ============================================================================
 def main():
-    print("=== GridLock 03: Resource Optimizer ===\n")
+    print("=== NexGen 03: Resource Optimizer ===\n")
     # ---- load artifacts (cascade + corridor risk)
     cascade = pd.read_csv(C.CASCADE_EDGES_CSV)
     print(f"  cascade edges: {len(cascade)} (max r: "

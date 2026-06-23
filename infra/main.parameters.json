@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "westeurope"
+    },
+    "appName": {
+      "value": "gridlock"
+    },
+    "environment": {
+      "value": "prod"
+    },
+    "imageTag": {
+      "value": "latest"
+    },
+    "mapplsRestKey": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/SUBSCRIPTION_ID/resourceGroups/rg-gridlock-prod/providers/Microsoft.KeyVault/vaults/kv-gridlock-xxxx"
+        },
+        "secretName": "mappls-rest-key"
+      }
+    },
+    "mapplsClientId": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/SUBSCRIPTION_ID/resourceGroups/rg-gridlock-prod/providers/Microsoft.KeyVault/vaults/kv-gridlock-xxxx"
+        },
+        "secretName": "mappls-client-id"
+      }
+    },
+    "mapplsClientSecret": {
+      "reference": {
+        "keyVault": {
+          "id": "/subscriptions/SUBSCRIPTION_ID/resourceGroups/rg-gridlock-prod/providers/Microsoft.KeyVault/vaults/kv-gridlock-xxxx"
+        },
+        "secretName": "mappls-client-secret"
+      }
+    }
+  }
+}

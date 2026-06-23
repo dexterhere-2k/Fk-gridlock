@@ -1,4 +1,4 @@
-"""GridLock — 01: Step 4 — Write metrics.json (the DoD contract).
+"""NexGen — 01: Step 4 — Write metrics.json (the DoD contract).
 
 Combines the held-out test metrics for every target into a single JSON.
 The structure mirrors what 06_DEMO_AND_QA / the spec DoD expect:
@@ -58,7 +58,7 @@ def _count_nonzero_features(nlp: pd.DataFrame) -> int:
 
 
 def main():
-    print("=== GridLock 01: EVALUATE ===\n")
+    print("=== NexGen 01: EVALUATE ===\n")
     df = pd.read_parquet(C.FEATURES_PARQUET)
     df = make_split(df)
     df, _ = encode_categoricals(df, fit=True)

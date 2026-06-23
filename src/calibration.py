@@ -1,4 +1,4 @@
-"""GridLock — 06: Calibration curves + risk-prior vs actual analysis.
+"""NexGen — 06: Calibration curves + risk-prior vs actual analysis.
 
 Per spec 06 §"Evaluation plan":
   - "Risk prior: calibration plot vs actual closure rates."
@@ -89,7 +89,7 @@ def _corridor_risk_calibration(corridor_risk: pd.DataFrame,
 
 
 def main():
-    print("=== GridLock 06: Calibration analysis ===\n")
+    print("=== NexGen 06: Calibration analysis ===\n")
     df = pd.read_parquet(C.FEATURES_PARQUET)
     df = make_split(df)
     df, _ = encode_categoricals(df, fit=True)

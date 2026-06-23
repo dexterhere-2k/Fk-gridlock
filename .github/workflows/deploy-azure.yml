@@ -1,0 +1,158 @@
+name: deploy-azure
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+  workflow_dispatch:
+    inputs:
+      imageTag:
+        description: 'Image tag to deploy'
+        required: false
+        default: 'latest'
+      environment:
+        description: 'Deployment environment'
+        required: false
+        default: 'prod'
+        type: choice
+        options: ['dev', 'staging', 'prod']
+
+env:
+  APP_NAME: gridlock
+  IMAGE_TAG: ${{ github.sha }}
+  AZURE_SUBSCRIPTION: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: ${{ github.event.inputs.environment || 'prod' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ======================================================================
+      # Azure login via OIDC (no secrets — federated credential on the SP)
+      # ======================================================================
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # ======================================================================
+      # Get ACR credentials from Bicep output
+      # ======================================================================
+      - name: Get ACR name from deployment outputs
+        id: acr
+        run: |
+          RG_NAME="rg-${APP_NAME}-${{ github.event.inputs.environment || 'prod' }}"
+          ACR_NAME=$(az containerapp show \
+            -n "ca-${APP_NAME}-${{ github.event.inputs.environment || 'prod' }}" \
+            -g "${RG_NAME}" \
+            --query "properties.configuration.registries[0].server" \
+            -o tsv 2>/dev/null | sed 's|\.azurecr\.io||')
+          
+          if [ -z "${ACR_NAME}" ]; then
+            echo "::warning::ACR not found from existing deployment — searching..."
+            ACR_NAME=$(az acr list \
+              --query "[?starts_with(name, 'cr${APP_NAME}')].name | [0]" \
+              -o tsv)
+          fi
+          echo "acr_name=${ACR_NAME}" >> $GITHUB_OUTPUT
+          echo "acr_server=${ACR_NAME}.azurecr.io" >> $GITHUB_OUTPUT
+
+      # ======================================================================
+      # Build & ACR login
+      # ======================================================================
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ steps.acr.outputs.acr_server }}
+          username: ${{ steps.acr.outputs.acr_name }}
+          password: ${{ secrets.AZURE_CLIENT_ID }}
+
+      # ======================================================================
+      # Build and push the runtime (all-in-one) image
+      # ======================================================================
+      - name: Build & push runtime image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: runtime
+          push: true
+          tags: |
+            ${{ steps.acr.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}
+            ${{ steps.acr.outputs.acr_server }}/gridlock:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+
+      # ======================================================================
+      # Deploy to Container Apps (zero-downtime revision update)
+      # ======================================================================
+      - name: Deploy to Container Apps
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          imageToDeploy: ${{ steps.acr.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}
+          containerAppName: ca-${{ env.APP_NAME }}-${{ github.event.inputs.environment || 'prod' }}
+          resourceGroup: rg-${{ env.APP_NAME }}-${{ github.event.inputs.environment || 'prod' }}
+          targetPort: 80
+          ingress: external
+          transport: auto
+
+      # ======================================================================
+      # Health check
+      # ======================================================================
+      - name: Wait for deployment & health check
+        run: |
+          RG="rg-${APP_NAME}-${{ github.event.inputs.environment || 'prod' }}"
+          ACA="ca-${APP_NAME}-${{ github.event.inputs.environment || 'prod' }}"
+          
+          echo "Waiting for Container App revision to activate..."
+          sleep 15
+          
+          FQDN=$(az containerapp show -n "${ACA}" -g "${RG}" \
+            --query "properties.configuration.ingress.fqdn" -o tsv)
+          
+          echo "Health checking https://${FQDN}/api/health ..."
+          for i in $(seq 1 20); do
+            if curl -fsS "https://${FQDN}/api/health" >/dev/null 2>&1; then
+              echo "✓ Health check passed (attempt ${i})"
+              curl -s "https://${FQDN}/api/health" | python3 -m json.tool
+              exit 0
+            fi
+            echo "  ... waiting (attempt ${i}/20)"
+            sleep 6
+          done
+          
+          echo "✗ Health check failed after 20 attempts"
+          exit 1
+
+      # ======================================================================
+      # Summary
+      # ======================================================================
+      - name: Deployment summary
+        if: always()
+        run: |
+          RG="rg-${APP_NAME}-${{ github.event.inputs.environment || 'prod' }}"
+          ACA="ca-${APP_NAME}-${{ github.event.inputs.environment || 'prod' }}"
+          FQDN=$(az containerapp show -n "${ACA}" -g "${RG}" \
+            --query "properties.configuration.ingress.fqdn" -o tsv 2>/dev/null || echo "unknown")
+          
+          echo "=========================================="
+          echo "  GridLock — Azure Deployment Summary"
+          echo "=========================================="
+          echo "  Image:      ${{ steps.acr.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}"
+          echo "  FQDN:       https://${FQDN}"
+          echo "  Resource:   ${RG}/${ACA}"
+          echo "  Workflow:   ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "=========================================="

@@ -1,4 +1,4 @@
-"""GridLock — 04: FastAPI gateway.
+"""NexGen — FastAPI gateway for ASTraM intelligence.
 
 Per spec 04, this is the ONE HTTP entry point for the entire system.
 It wires the ML core (01), NLP layer (02), and ILP optimizer (03) behind
@@ -64,12 +64,12 @@ def create_app() -> FastAPI:
         nonlocal service
         try:
             service = Service()
-            print("[gridlock] service ready: 5 artifacts loaded, "
+            print("[nexgen] service ready: 5 artifacts loaded, "
                   f"{service.health()['n_corridors']} corridors, "
                   f"{service.health()['n_cascade_edges']} cascade edges",
                   flush=True)
         except Exception as exc:
-            print(f"[gridlock] service load FAILED: {exc}", flush=True)
+            print(f"[nexgen] service load FAILED: {exc}", flush=True)
             service = None
 
         # spec 08 #2 — background SLA ticker. Watches elapsed time
@@ -102,7 +102,7 @@ def create_app() -> FastAPI:
                     pass
 
     app = FastAPI(
-        title="GridLock Congestion Intelligence API",
+        title="NexGen ASTraM Intelligence API",
         description=("Spec 04 — single FastAPI gateway for the ML core (01), "
                      "NLP layer (02), and ILP optimizer (03)."),
         version="0.1.0",
@@ -219,7 +219,7 @@ def create_app() -> FastAPI:
     # nudge, never auto-dispatch.
     @app.get("/api/cascade/alerts/{corridor}", tags=["cascade"])
     def cascade_alerts(corridor: str) -> dict:
-        from ..cascade import get_cascade_alerts
+        from src.cascade import get_cascade_alerts
         try:
             alerts = get_cascade_alerts(corridor)
         except Exception as exc:
@@ -278,7 +278,7 @@ def create_app() -> FastAPI:
             # own roster; this pool mirrors the 10 real Bengaluru police
             # stations and the 3 responding agencies so the dispatch
             # logic can exercise agency matching + travel-time matrix.
-            from ..mappls_service import DEFAULT_STATION_COORDS
+            from src.mappls_service import DEFAULT_STATION_COORDS
             stations = list(DEFAULT_STATION_COORDS.keys())
             agencies = ["police", "traffic", "BBMP", "BWSSB", "BESCOM"]
             # 2 units per station, deterministic spread of agencies
@@ -310,7 +310,7 @@ def create_app() -> FastAPI:
                 "manpower_officers": 8, "barricades": 4,
             })
             # spec 07: append a real diversion route (cached/fallback)
-            from ..mappls_service import build_diversion_route
+            from src.mappls_service import build_diversion_route
             try:
                 route = build_diversion_route("Mysore Road", "Magadi Road")
                 sched["diversion_route_geo"] = {
@@ -375,7 +375,7 @@ def create_app() -> FastAPI:
     # ---- /api/map/health
     @app.get("/api/map/health", response_model=MapHealthResponse, tags=["map"])
     def map_health() -> dict:
-        from ..mappls_service import (_TOKEN, CACHE_DIR,
+        from src.mappls_service import (_TOKEN, CACHE_DIR,
                                        DEFAULT_CORRIDOR_COORDS,
                                        DEFAULT_STATION_COORDS,
                                        PRODUCT_LIMITATIONS)
@@ -414,39 +414,39 @@ def create_app() -> FastAPI:
 
     @app.get("/api/map/risk-heatmap", response_model=GeoJsonResponse, tags=["map"])
     def map_risk_heatmap() -> dict:
-        from ..geo import build_corridor_heatmap
+        from src.geo import build_corridor_heatmap
         gj = build_corridor_heatmap()
         return {"layer": "risk_heatmap", "n_features": len(gj["features"]),
                 "source": "static", "geojson": gj}
 
     @app.get("/api/map/incidents", response_model=GeoJsonResponse, tags=["map"])
     def map_incidents(limit: int = 500) -> dict:
-        from ..geo import build_incident_pins
+        from src.geo import build_incident_pins
         gj = build_incident_pins(limit=limit)
         return {"layer": "incidents", "n_features": len(gj["features"]),
                 "source": "static", "geojson": gj}
 
     @app.get("/api/map/stations", response_model=GeoJsonResponse, tags=["map"])
     def map_stations() -> dict:
-        from ..geo import build_police_stations
+        from src.geo import build_police_stations
         gj = build_police_stations()
         return {"layer": "police_stations", "n_features": len(gj["features"]),
                 "source": "static", "geojson": gj}
 
     @app.post("/api/map/diversion", tags=["map"])
     def map_diversion(req: DiversionRequest) -> dict:
-        from ..mappls_service import build_diversion_route
+        from src.mappls_service import build_diversion_route
         return build_diversion_route(req.origin_corridor, req.target_corridor)
 
     @app.post("/api/map/eta", tags=["map"])
     def map_eta(req: EtaRequest) -> dict:
-        from ..mappls_service import route
+        from src.mappls_service import route
         return route({"lat": req.origin_lat, "lon": req.origin_lon},
                     {"lat": req.dest_lat, "lon": req.dest_lon})
 
     @app.post("/api/map/nearest-station", tags=["map"])
     def map_nearest_station(req: NearestStationRequest) -> dict:
-        from ..mappls_service import nearby
+        from src.mappls_service import nearby
         results = nearby(req.lat, req.lon, "police station",
                           radius_m=req.radius_m)
         return {"results": results, "n": len(results)}
@@ -487,7 +487,7 @@ def create_app() -> FastAPI:
                 pass
 
             await websocket.accept()
-            from ..demo_replay import replay_events
+            from src.demo_replay import replay_events
             import asyncio
             count = 0
             t0 = time.time()

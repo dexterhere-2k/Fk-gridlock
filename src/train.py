@@ -1,4 +1,4 @@
-"""GridLock — 01: Step 3 — Train all 4 targets + risk prior.
+"""NexGen — 01: Step 3 — Train all 4 targets + risk prior.
 
   Target 1 — Clearance time: three GradientBoostingRegressors with quantile
               loss (P10 / P50 / P90) on log1p(duration), plus a conformal
@@ -296,7 +296,7 @@ def make_split(df: pd.DataFrame, test_frac: float = 0.15, val_frac: float = 0.15
 
 
 def main():
-    print("=== GridLock 01: TRAIN ===\n")
+    print("=== NexGen 01: TRAIN ===\n")
     df = pd.read_parquet(C.FEATURES_PARQUET)
     print(f"loaded features: {df.shape}")
 

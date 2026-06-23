@@ -1,4 +1,4 @@
-"""GridLock — 02: Tier-2 LLM enrichment (OPTIONAL one-time batch).
+"""NexGen — 02: Tier-2 LLM enrichment (OPTIONAL one-time batch).
 
 The rule-based Tier-1 extractor (`nlp_extract.py`) is the **default + only
 thing that runs at demo time**. This script is a one-shot batch over the
