@@ -65,5 +65,5 @@ jobs:
 
       - name: Build the runtime image (sanity)
         run: |
-          docker build --target runtime -t gridlock:test .
+          docker build -f Dockerfile.runtime --target runtime -t gridlock:test .
           docker run --rm gridlock:test ls -la /entrypoint.sh /etc/nginx/conf.d/gridlock.conf.template

@@ -1,5 +1,5 @@
 {
   "build": {
-    "dockerfilePath": "Dockerfile.backend"
+    "dockerfilePath": ".railway/Dockerfile"
   }
 }

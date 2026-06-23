@@ -2,6 +2,7 @@ services:
   gridlock:
     build:
       context: .
+      dockerfile: Dockerfile.runtime
       target: runtime
     image: gridlock:latest
     container_name: gridlock
