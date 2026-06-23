@@ -26,6 +26,9 @@ on:
 env:
   APP_NAME: gridlock
   IMAGE_TAG: ${{ github.sha }}
+  MAPPLS_REST_KEY: ${{ secrets.MAPPLS_REST_KEY }}
+  MAPPLS_CLIENT_ID: ${{ secrets.MAPPLS_CLIENT_ID }}
+  MAPPLS_CLIENT_SECRET: ${{ secrets.MAPPLS_CLIENT_SECRET }}
 
 jobs:
   build-and-deploy:
@@ -49,23 +52,22 @@ jobs:
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
       # ======================================================================
-      # Deploy Bicep infra (creates ACR, ACA env, Container App, storage, etc.)
-      # Uses incremental mode — safe to re-run on every push.
+      # Deploy Bicep infra - Phase 1: Deploy ACR & Shared Infra (without Container App)
       # ======================================================================
-      - name: Deploy infrastructure
-        id: infra
+      - name: Deploy ACR & Shared Infrastructure
+        id: infra-pre
         run: |
           set -euo pipefail
           
           az deployment sub create \
-            --name "gridlock-ci-${GITHUB_RUN_ID}" \
+            --name "gridlock-ci-pre-${GITHUB_RUN_ID}" \
             --location westeurope \
             --template-file infra/main.bicep \
             --parameters \
               appName="${APP_NAME}" \
               environment=prod \
               location=westeurope \
-              imageTag="${IMAGE_TAG}" \
+              deployContainerApp=false \
               mapplsRestKey="${MAPPLS_REST_KEY:-}" \
               mapplsClientId="${MAPPLS_CLIENT_ID:-}" \
               mapplsClientSecret="${MAPPLS_CLIENT_SECRET:-}" \
@@ -86,8 +88,8 @@ jobs:
         run: |
           set -euo pipefail
           
-          ACR_NAME="${{ steps.infra.outputs.acr_name }}"
-          ACR_SERVER="${{ steps.infra.outputs.acr_server }}"
+          ACR_NAME="${{ steps.infra-pre.outputs.acr_name }}"
+          ACR_SERVER="${{ steps.infra-pre.outputs.acr_server }}"
           
           if [ -z "$ACR_NAME" ] && [ -n "$ACR_SERVER" ]; then
             ACR_NAME="${ACR_SERVER%%.*}"
@@ -95,8 +97,8 @@ jobs:
           
           if [ -z "$ACR_NAME" ]; then
             echo "::error::ACR name not found. Diagnostic information follows."
-            echo "steps.infra.outputs.acr_name='${{ steps.infra.outputs.acr_name }}'"
-            echo "steps.infra.outputs.acr_server='${{ steps.infra.outputs.acr_server }}'"
+            echo "steps.infra-pre.outputs.acr_name='${{ steps.infra-pre.outputs.acr_name }}'"
+            echo "steps.infra-pre.outputs.acr_server='${{ steps.infra-pre.outputs.acr_server }}'"
             echo "Listing available ACRs (login may have failed):"
             az acr list --query "[].{name:name,loginServer:loginServer}" -o table || true
             echo "Ensure the Bicep deploy step succeeded and Azure login is valid."
@@ -116,25 +118,34 @@ jobs:
           target: runtime
           push: true
           tags: |
-            ${{ steps.infra.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}
-            ${{ steps.infra.outputs.acr_server }}/gridlock:latest
+            ${{ steps.infra-pre.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}
+            ${{ steps.infra-pre.outputs.acr_server }}/gridlock:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
 
       # ======================================================================
-      # Deploy to Container Apps (zero-downtime revision update)
+      # Deploy to Container Apps (via Bicep)
       # ======================================================================
-      - name: Deploy to Container Apps
-        uses: azure/container-apps-deploy-action@v2
-        with:
-          imageToDeploy: ${{ steps.infra.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}
-          containerAppName: ca-${{ env.APP_NAME }}-${{ github.event.inputs.environment || 'prod' }}
-          resourceGroup: rg-${{ env.APP_NAME }}-${{ github.event.inputs.environment || 'prod' }}
-          targetPort: 80
-          ingress: external
-          transport: auto
+      - name: Deploy Container App
+        id: infra-post
+        run: |
+          set -euo pipefail
+          
+          az deployment sub create \
+            --name "gridlock-ci-post-${GITHUB_RUN_ID}" \
+            --location westeurope \
+            --template-file infra/main.bicep \
+            --parameters \
+              appName="${APP_NAME}" \
+              environment=prod \
+              location=westeurope \
+              deployContainerApp=true \
+              imageTag="${IMAGE_TAG}" \
+              mapplsRestKey="${MAPPLS_REST_KEY:-}" \
+              mapplsClientId="${MAPPLS_CLIENT_ID:-}" \
+              mapplsClientSecret="${MAPPLS_CLIENT_SECRET:-}"
 
       # ======================================================================
       # Health check
@@ -178,7 +189,7 @@ jobs:
           echo "=========================================="
           echo "  GridLock — Azure Deployment Summary"
           echo "=========================================="
-          echo "  Image:      ${{ steps.infra.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}"
+          echo "  Image:      ${{ steps.infra-pre.outputs.acr_server }}/gridlock:${{ env.IMAGE_TAG }}"
           echo "  FQDN:       https://${FQDN}"
           echo "  Resource:   ${RG}/${ACA}"
           echo "  Workflow:   ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

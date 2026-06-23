@@ -24,6 +24,9 @@ param mapplsClientId string = ''
 @secure()
 param mapplsClientSecret string = ''
 
+@description('Whether to deploy the Container App (set to false if the image does not exist yet)')
+param deployContainerApp bool = true
+
 var rgName = 'rg-${appName}-${environment}'
 var acrName = 'cr${appName}${uniqueString(subscription().subscriptionId)}'
 var acaEnvName = 'cae-${appName}-${environment}'
@@ -62,6 +65,19 @@ module logAnalytics 'br/public:avm/res/operational-insights/workspace:0.3.0' = {
 }
 
 // ============================================================================
+// User-Assigned Managed Identity
+// ============================================================================
+module managedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.2.0' = {
+  name: 'managedIdentityDeploy'
+  scope: rg
+  params: {
+    name: identityName
+    location: location
+    tags: tags
+  }
+}
+
+// ============================================================================
 // Container Registry
 // ============================================================================
 module acr 'br/public:avm/res/container-registry/registry:0.5.1' = {
@@ -73,19 +89,13 @@ module acr 'br/public:avm/res/container-registry/registry:0.5.1' = {
     tags: tags
     acrSku: 'Basic'
     acrAdminUserEnabled: true
-  }
-}
-
-// ============================================================================
-// User-Assigned Managed Identity
-// ============================================================================
-module managedIdentity 'br/public:avm/res/managed-identity/user-assigned-identity:0.2.0' = {
-  name: 'managedIdentityDeploy'
-  scope: rg
-  params: {
-    name: identityName
-    location: location
-    tags: tags
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'AcrPull'
+        principalId: managedIdentity.outputs.principalId
+        principalType: 'ServicePrincipal'
+      }
+    ]
   }
 }
 
@@ -126,6 +136,13 @@ module storageAccount 'br/public:avm/res/storage/storage-account:0.9.0' = {
         }
       ]
     }
+    roleAssignments: [
+      {
+        roleDefinitionIdOrName: 'Storage File Data Privileged Contributor'
+        principalId: managedIdentity.outputs.principalId
+        principalType: 'ServicePrincipal'
+      }
+    ]
   }
 }
 
@@ -143,12 +160,40 @@ module containerAppEnv 'br/public:avm/res/app/managed-environment:0.4.0' = {
   }
 }
 
+// Existing resource references for child storage configuration
+resource storageAccountRes 'Microsoft.Storage/storageAccounts@2023-01-01' existing = {
+  name: storageName
+  scope: rg
+}
+
+resource containerAppEnvRes 'Microsoft.App/managedEnvironments@2023-05-01' existing = {
+  name: acaEnvName
+  scope: rg
+}
+
+resource envStorage 'Microsoft.App/managedEnvironments/storages@2023-05-01' = {
+  parent: containerAppEnvRes
+  name: storageName
+  scope: rg
+  properties: {
+    azureFile: {
+      accountName: storageAccount.outputs.name
+      accountKey: storageAccountRes.listKeys().keys[0].value
+      shareName: fileShareName
+      accessMode: 'ReadWrite'
+    }
+  }
+}
+
 // ============================================================================
 // Container App
 // ============================================================================
-module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
+module containerApp 'br/public:avm/res/app/container-app:0.4.0' = if (deployContainerApp) {
   name: 'containerAppDeploy'
   scope: rg
+  dependsOn: [
+    envStorage
+  ]
   params: {
     name: acaName
     location: location
@@ -234,12 +279,10 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
       'mappls-client-id': mapplsClientId
       'mappls-client-secret': mapplsClientSecret
     }
-    ingressSettings: {
-      external: true
-      targetPort: 80
-      transport: 'auto'
-      allowInsecure: false
-    }
+    ingressExternal: true
+    ingressTargetPort: 80
+    ingressTransport: 'auto'
+    ingressAllowInsecure: false
     registries: [
       {
         server: acr.outputs.loginServer
@@ -260,38 +303,13 @@ module containerApp 'br/public:avm/res/app/container-app:0.4.0' = {
 }
 
 // ============================================================================
-// Role Assignments
-// ============================================================================
-// Grant ACA identity access to ACR (AcrPull)
-resource acrPullRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(rg.id, managedIdentity.outputs.principalId, '7f951dda-4ed3-4680-a7ca-43fe172d538d')
-  scope: rg
-  properties: {
-    principalId: managedIdentity.outputs.principalId
-    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/7f951dda-4ed3-4680-a7ca-43fe172d538d'
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Grant ACA identity access to storage account (StorageFileDataPrivilegedContributor)
-resource storageContributorRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(rg.id, managedIdentity.outputs.principalId, 'b8eda974-7b85-4f76-af95-8a5ca8d8c081')
-  scope: rg
-  properties: {
-    principalId: managedIdentity.outputs.principalId
-    roleDefinitionId: '/subscriptions/${subscription().subscriptionId}/providers/Microsoft.Authorization/roleDefinitions/b8eda974-7b85-4f76-af95-8a5ca8d8c081'
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// ============================================================================
 // Outputs
 // ============================================================================
 output resourceGroupName string = rg.name
 output acrLoginServer string = acr.outputs.loginServer
 output acrName string = acr.outputs.name
-output containerAppFqdn string = containerApp.outputs.fqdn
-output containerAppName string = containerApp.outputs.name
+output containerAppFqdn string = deployContainerApp ? containerApp.outputs.fqdn : ''
+output containerAppName string = deployContainerApp ? containerApp.outputs.name : ''
 output storageAccountName string = storageAccount.outputs.name
 output fileShareName string = fileShareName
 output keyVaultName string = keyVault.outputs.name
