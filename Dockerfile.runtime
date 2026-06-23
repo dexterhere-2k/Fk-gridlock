@@ -31,7 +31,7 @@ RUN cd frontend && npm run build
 # ============================================================================
 # Stage 2 — Backend runtime (standalone)
 # ============================================================================
-FROM python:3.11-slim AS api
+FROM python:3.14-slim AS api
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -81,7 +81,7 @@ CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--worker
 # The entrypoint starts uvicorn in the background and execs nginx in the
 # foreground so it's PID 1.
 # ============================================================================
-FROM python:3.11-slim AS runtime
+FROM python:3.14-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -115,6 +115,7 @@ COPY api/        ./api/
 COPY tests/      ./tests/
 COPY data/       ./data/
 COPY artifacts/  ./artifacts/
+COPY artifacts/  ./artifacts_bak/
 COPY scripts/    ./scripts/
 COPY README.md   ./
 COPY requirements.txt ./

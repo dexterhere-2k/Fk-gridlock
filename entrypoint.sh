@@ -13,6 +13,19 @@
 #     process exited and restart the container
 set -eu
 
+# Recover artifacts if mounted volume is empty (e.g. Azure Container App File Share mount)
+if [ -d "/app/artifacts_bak" ]; then
+    echo "[entrypoint] Checking artifacts in /app/artifacts..."
+    mkdir -p /app/artifacts
+    if [ ! -f "/app/artifacts/context.pkl" ]; then
+        echo "[entrypoint] Mounted volume is missing artifacts. Copying from backup..."
+        cp -rp /app/artifacts_bak/* /app/artifacts/
+        echo "[entrypoint] Artifacts restored successfully."
+    else
+        echo "[entrypoint] Artifacts already exist in /app/artifacts."
+    fi
+fi
+
 # Default PORT (Heroku always sets this; the default is for local Docker use)
 : "${PORT:=80}"
 
