@@ -5,14 +5,21 @@
 // pure-SVG schematic of Bengaluru (the provided Mappls REST key does
 // not authorize the Map SDK base tiles; we disclose this honestly in
 // the limitations badge below the map).
+// Recharts timeline plus scrubber below the map replays
+// the last 24h of ASTraM incidents (from /api/replay/timeline). The
+// scrubber drives `pulseIndex`, which highlights the dominant
+// corridor of that bucket on the map.
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api.js";
 import { useLiveStatus } from "../hooks/useLiveStatus.js";
+import { useReplayTimeline } from "../hooks/useReplayTimeline.js";
 import {
   ErrorPanel, Loading, PageHeader, MetricCard,
 } from "../components/Shared.jsx";
 import MapplsMap from "../components/MapplsMap.jsx";
+import TimelineChart from "../components/TimelineChart.jsx";
+import TimeSlider from "../components/TimeSlider.jsx";
 
 // Hard-coded Bengaluru center + corridor coords (mirrors
 // src/mappls_service.DEFAULT_CORRIDOR_COORDS). We bundle them here so
@@ -77,6 +84,21 @@ export default function LiveView() {
   const [pulseCorridor, setPulseCorridor] = useState(null);
   const { status: wsStatus, messages } = useLiveStatus();
 
+  // Timeline scrubber state
+  const { timeline: historyTimeline } = useReplayTimeline(24);
+  const [timeIndex, setTimeIndex] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  // The peak index for the historical timeline = bucket with the most incidents
+  const peakIndex = useMemo(() => {
+    if (!historyTimeline || historyTimeline.length === 0) return 0;
+    let pi = 0, pv = -1;
+    historyTimeline.forEach((b, i) => {
+      const v = b.n_incidents || 0;
+      if (v > pv) { pv = v; pi = i; }
+    });
+    return pi;
+  }, [historyTimeline]);
+
   // Pulse-ring the most-recent WebSocket corridor for ~3s, then drop it.
   // Throttled: only `corridor_pulse` (not resolved/cascade_alert), only
   // events with a real ETA (>=5m), only non-Non-corridor, and at most
@@ -98,6 +120,15 @@ export default function LiveView() {
     const t = setTimeout(() => setPulseCorridor(null), 3000);
     return () => clearTimeout(t);
   }, [messages]);
+
+  // Auto-advance the timeline scrubber when `playing` is on.
+  useEffect(() => {
+    if (!playing || !historyTimeline || historyTimeline.length === 0) return;
+    const id = setInterval(() => {
+      setTimeIndex((i) => (i + 1) % historyTimeline.length);
+    }, 700);
+    return () => clearInterval(id);
+  }, [playing, historyTimeline]);
 
   useEffect(() => {
     let alive = true;
@@ -129,20 +160,25 @@ export default function LiveView() {
   // Top-3 cascade edges rendered as polylines on the map
   const cascadeDiversions = useMemo(() => {
     if (!cascade || !corridors) return [];
-    return (cascade.strongest_edges || []).slice(0, 3).map((e) => ({
-      id: `${e.source}→${e.target}`,
-      source: e.source, target: e.target,
-      eta_min: Math.round(e.lag_h * 60),
-      km: 0,    // the cascade edge is a temporal, not spatial, link
-      polyline: [
-        { lat: BENGALURU_CENTER[0], lon: BENGALURU_CENTER[1] },
-      ],
-      source_kind: "cascade",
-    }));
+    return (cascade.strongest_edges || []).slice(0, 3).map((e) => {
+      const src = CORRIDOR_COORDS[e.source] || BENGALURU_CENTER;
+      const tgt = CORRIDOR_COORDS[e.target] || BENGALURU_CENTER;
+      return {
+        id: `${e.source}→${e.target}`,
+        source: e.source, target: e.target,
+        eta_min: Math.round(e.lag_h * 60),
+        km: 0,
+        polyline: [
+          { lat: src[0], lon: src[1] },
+          { lat: tgt[0], lon: tgt[1] },
+        ],
+        source_kind: "cascade",
+      };
+    });
   }, [cascade, corridors]);
 
   return (
-    <div className="space-y-4">
+    <div className="flex h-full min-h-0 flex-col gap-2 overflow-y-auto p-3">
       <PageHeader
         title="Live corridor status"
         subtitle="Risk-prior backdrop + cascade overlay + replay-driven live pulse"
@@ -275,6 +311,48 @@ export default function LiveView() {
           </div>
         </section>
       </div>
+
+      {/* Historical incident timeline (24h replay) */}
+      <section data-tour="timeline" className="card p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <div>
+            <h2 className="text-sm font-semibold text-ink-100">
+              Historical incident timeline (24h replay)
+            </h2>
+            <div className="text-[10px] text-ink-500">
+              drag the slider to scrub through the last 24h of ASTraM incident counts
+            </div>
+          </div>
+          <span className="label">spec 06 — demo_replay</span>
+        </div>
+        {historyTimeline.length === 0 ? (
+          <Loading label="loading timeline…" />
+        ) : (
+          <>
+            <TimeSlider
+              timeline={historyTimeline}
+              timeIndex={timeIndex}
+              peakIndex={peakIndex}
+              playing={playing}
+              onScrub={setTimeIndex}
+              onPlayToggle={() => setPlaying((p) => !p)}
+              onJumpPeak={() => {
+                setPlaying(false);
+                setTimeIndex(peakIndex);
+              }}
+              labelFormatter={(b) => `${b.label} · ${b.n_incidents || 0} incidents`}
+            />
+            <div className="mt-2">
+              <TimelineChart
+                timeline={historyTimeline}
+                timeIndex={timeIndex}
+                onScrub={setTimeIndex}
+                height={120}
+              />
+            </div>
+          </>
+        )}
+      </section>
 
       {/* top risk table */}
       <section className="card p-4">
