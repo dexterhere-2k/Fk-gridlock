@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "hypercorn api.main:app --bind [::]:$PORT",
+    "startCommand": "sh -c 'exec hypercorn api.main:app --bind [::]:$PORT'",
     "healthcheckPath": "/api/health",
     "restartPolicyType": "ON_FAILURE"
   }

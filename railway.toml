@@ -3,6 +3,8 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.backend"
 
 [deploy]
+startCommand = "sh -c 'exec hypercorn api.main:app --bind [::]:$PORT'"
 restartPolicyType = "ON_FAILURE"
 healthcheckPath = "/api/health"
 healthcheckTimeout = 300
+
