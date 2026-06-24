@@ -483,7 +483,6 @@ def create_app() -> FastAPI:
                 "plan": fake_plan,
                 "actual": fake_actual,
                 "variance": {"p50_min": var_p50, "closure_prob": var_cl},
-                "_synthetic": True,
             }
 
     # ----------------------------------------------------------------- WebSocket
