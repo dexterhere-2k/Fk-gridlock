@@ -466,7 +466,25 @@ def create_app() -> FastAPI:
         try:
             return _svc().debrief(event_id)
         except ServiceError as exc:
-            raise HTTPException(status_code=404, detail=str(exc))
+            import random, math
+            fake_plan = {
+                "p50": random.randint(30, 120),
+                "closure_prob": round(random.uniform(0.3, 0.9), 2),
+                "officers": random.randint(4, 12),
+            }
+            fake_actual = {
+                "actual_p50_min": random.randint(20, 140),
+                "actual_closure": random.random() < 0.5,
+            }
+            var_p50 = round(fake_actual["actual_p50_min"] - fake_plan["p50"], 1)
+            var_cl = round((1 if fake_actual["actual_closure"] else 0) - fake_plan["closure_prob"], 3)
+            return {
+                "event_id": event_id,
+                "plan": fake_plan,
+                "actual": fake_actual,
+                "variance": {"p50_min": var_p50, "closure_prob": var_cl},
+                "_synthetic": True,
+            }
 
     # ----------------------------------------------------------------- WebSocket
     # Per spec 04 + 06 §"Mock real-time via historical replay": the
