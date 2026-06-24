@@ -54,14 +54,41 @@ def _load_corridor_risk() -> dict[str, float]:
     return _CORRIDOR_RISK
 
 
+def _generate_synthetic_events(n: int = 200) -> pd.DataFrame:
+    """Generate synthetic incident events when parquet is missing."""
+    import os
+    corridors = sorted(_load_corridor_risk().keys()) or [f"corridor_{i}" for i in range(22)]
+    causes = ["accident", "breakdown", "construction", "tree_fall", "water_logging",
+              "protest", "procession", "vip_movement", "pothole", "public_event"]
+    if not corridors:
+        corridors = [f"corridor_{i}" for i in range(22)]
+    now = pd.Timestamp.now(tz="UTC")
+    data = []
+    for i in range(n):
+        ts = now - pd.Timedelta(minutes=random.randint(0, 60 * 24 * 7))  # last 7 days
+        data.append({
+            "id": i,
+            "corridor": random.choice(corridors),
+            "event_cause": random.choice(causes),
+            "status": random.choice(["open", "closed", "open", "open"]),
+            "start_datetime": ts,
+            "requires_road_closure": random.choice([0, 0, 0, 1]),
+            "duration_min": random.randint(5, 240),
+        })
+    df = pd.DataFrame(data)
+    df = df.sort_values("start_datetime").reset_index(drop=True)
+    print(f"[demo_replay] _generate_synthetic_events: {len(df)} events from {len(corridors)} corridors", flush=True)
+    return df
+
+
 def _load_event_log() -> pd.DataFrame:
     """Return the historical incident log sorted by start_datetime."""
     import os
     fpath = str(C.CLEAN_PARQUET)
     print(f"[demo_replay] _load_event_log: path={fpath} exists={os.path.exists(fpath)}", flush=True)
     if not os.path.exists(fpath):
-        print("[demo_replay] _load_event_log: FILE MISSING — returning empty df", flush=True)
-        return pd.DataFrame()
+        print("[demo_replay] _load_event_log: FILE MISSING — generating synthetic events", flush=True)
+        return _generate_synthetic_events(200)
     df = pd.read_parquet(C.CLEAN_PARQUET)
     print(f"[demo_replay] _load_event_log: loaded {len(df)} rows", flush=True)
     df = df.dropna(subset=["start_datetime"])
