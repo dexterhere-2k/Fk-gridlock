@@ -516,6 +516,14 @@ def create_app() -> FastAPI:
                                              "kind": "end",
                                              "n_pulses": count,
                                              "error": None})
+                # keep connection alive so client stays "open" —
+                # send a heartbeat every 30s until client disconnects
+                while True:
+                    await asyncio.sleep(30)
+                    try:
+                        await websocket.send_json({"ts": time.time(), "kind": "heartbeat"})
+                    except Exception:
+                        break
             except Exception as ws_err:
                 print(f"[ws] error: {ws_err}", flush=True)
                 tb_module.print_exc()
