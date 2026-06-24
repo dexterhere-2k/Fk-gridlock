@@ -14,13 +14,10 @@ frontend/dist
 frontend/node_modules
 
 # GridLock
-artifacts/ledger.sqlite3*
 artifacts/learning_log.json
 artifacts/last_retrain.json
 artifacts/llm_features_cache.json
 artifacts/demo_run.json
-data/incidents_*.parquet
-data/nlp_features.parquet
 data/llm_features_cache.json
 
 # Git / OS

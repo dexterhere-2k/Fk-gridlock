@@ -43,8 +43,6 @@ logs/
 Thumbs.db
 
 # GridLock: regenerateable artifacts (NOT the trained model bundle)
-artifacts/ledger.sqlite3
-artifacts/ledger.sqlite3-journal
 artifacts/learning_log.json
 artifacts/last_retrain.json
 artifacts/llm_features_cache.json
