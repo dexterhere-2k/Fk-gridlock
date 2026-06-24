@@ -21,6 +21,7 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Body
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 # Make the project root importable when run as `api.main`
 _ROOT = Path(__file__).resolve().parent.parent
@@ -121,9 +122,7 @@ def create_app() -> FastAPI:
 
     def _svc() -> Service:
         if service is None:
-            detail_msg = "service not loaded (see startup logs)"
-            if startup_error_traceback:
-                detail_msg = f"service load FAILED:\n{startup_error_traceback}"
+            detail_msg = f"service load FAILED:\n{startup_error_traceback}"
             raise HTTPException(status_code=503, detail=detail_msg)
         return service
 
@@ -428,7 +427,12 @@ def create_app() -> FastAPI:
     @app.get("/api/map/incidents", response_model=GeoJsonResponse, tags=["map"])
     def map_incidents(limit: int = 500) -> dict:
         from src.geo import build_incident_pins
-        gj = build_incident_pins(limit=limit)
+        import traceback as _tb
+        try:
+            gj = build_incident_pins(limit=limit)
+        except Exception as exc:
+            _tb.print_exc()
+            raise HTTPException(status_code=500, detail=str(exc))
         return {"layer": "incidents", "n_features": len(gj["features"]),
                 "source": "static", "geojson": gj}
 
@@ -493,21 +497,34 @@ def create_app() -> FastAPI:
                 pass
 
             await websocket.accept()
+            print(f"[ws] accepted, speed={speed} corridor={corridor}", flush=True)
             from src.demo_replay import replay_events
             import asyncio
+            import traceback as tb_module
             count = 0
             t0 = time.time()
-            for pulse in replay_events(speed=speed, corridor=corridor,
-                                        limit=200, max_sleep_s=0.05):
-                if time.time() - t0 > _WS_HARD_TIMEOUT_S:
-                    break
-                await websocket.send_json(pulse)
-                count += 1
-                # yield to the event loop so other requests aren't blocked
-                await asyncio.sleep(0)
-            await websocket.send_json({"ts": time.time(),
-                                         "kind": "end",
-                                         "n_pulses": count})
+            try:
+                for pulse in replay_events(speed=speed, corridor=corridor,
+                                            limit=200, max_sleep_s=0):
+                    if time.time() - t0 > _WS_HARD_TIMEOUT_S:
+                        break
+                    await websocket.send_json(pulse)
+                    count += 1
+                    await asyncio.sleep(0)
+                print(f"[ws] done loop, count={count}", flush=True)
+                await websocket.send_json({"ts": time.time(),
+                                             "kind": "end",
+                                             "n_pulses": count,
+                                             "error": None})
+            except Exception as ws_err:
+                print(f"[ws] error: {ws_err}", flush=True)
+                tb_module.print_exc()
+                try:
+                    await websocket.send_json({"ts": time.time(),
+                                                 "kind": "error",
+                                                 "error": str(ws_err)})
+                except Exception:
+                    pass
         except WebSocketDisconnect:
             pass
         finally:

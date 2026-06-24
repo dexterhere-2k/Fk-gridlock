@@ -88,6 +88,8 @@ def build_incident_pins(limit: int = 500, seed: int = 42) -> dict:
     via `seed`) so the map shows a stable representative view across
     reloads. Drops rows with missing coordinates.
     """
+    if not C.CLEAN_PARQUET.exists():
+        return {"type": "FeatureCollection", "features": []}
     df = pd.read_parquet(C.CLEAN_PARQUET)
     df = df.dropna(subset=["latitude", "longitude"])
     df = df[(df["latitude"] != 0) | (df["longitude"] != 0)]

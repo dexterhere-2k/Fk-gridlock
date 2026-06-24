@@ -56,9 +56,17 @@ def _load_corridor_risk() -> dict[str, float]:
 
 def _load_event_log() -> pd.DataFrame:
     """Return the historical incident log sorted by start_datetime."""
+    import os
+    fpath = str(C.CLEAN_PARQUET)
+    print(f"[demo_replay] _load_event_log: path={fpath} exists={os.path.exists(fpath)}", flush=True)
+    if not os.path.exists(fpath):
+        print("[demo_replay] _load_event_log: FILE MISSING — returning empty df", flush=True)
+        return pd.DataFrame()
     df = pd.read_parquet(C.CLEAN_PARQUET)
+    print(f"[demo_replay] _load_event_log: loaded {len(df)} rows", flush=True)
     df = df.dropna(subset=["start_datetime"])
     df = df.sort_values("start_datetime").reset_index(drop=True)
+    print(f"[demo_replay] _load_event_log: after cleanup {len(df)} rows", flush=True)
     return df
 
 

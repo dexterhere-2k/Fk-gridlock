@@ -51,9 +51,9 @@ artifacts/llm_features_cache.json
 artifacts/demo_run.json
 artifacts/eval_report.json
 artifacts/calibration.json
-data/incidents_*.parquet
-data/nlp_features.parquet
 data/llm_features_cache.json
+data/Astram*
+data/*.csv
 
 # GridLock: COMMITTED (the frozen trained state, spec 06)
 # artifacts/clearance_quantile.pkl
